@@ -1,0 +1,20 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+src-tauri/target/
+
+# IDE / 编辑器
+.cursor/
+.vscode/
+*.swp
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# npm 运行时产生的空锁文件
+npm
+tauri
+dev-env-installer@*
