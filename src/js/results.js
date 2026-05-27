@@ -32,7 +32,7 @@ export function renderResults() {
     mysql: `MySQL ${document.getElementById('ver-mysql').value}`,
     idea: 'IntelliJ IDEA 2023.3.8',
     navicat: 'Navicat Premium 16.2',
-    redis: 'Redis 3.2.100',
+    redis: 'Redis 5.0.14.1',
   };
 
   const successCount = results.filter(r => r.success).length;

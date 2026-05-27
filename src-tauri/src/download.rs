@@ -131,9 +131,7 @@ pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
         },
         "redis" => MirrorSource {
             urls: vec![
-                format!("https://mirrors.huaweicloud.com/redis/redis-{version}.zip"),
                 format!("https://github.com/tporadowski/redis/releases/download/v{version}/Redis-x64-{version}.zip"),
-                format!("https://github.com/redis-windows/redis-windows/releases/download/{version}/Redis-{version}-Windows-x64-msys2.zip"),
             ],
             filename: format!("Redis-x64-{version}.zip"),
         },

@@ -65,9 +65,11 @@ pub async fn install(
 
 /// 校验安装路径：拒绝含非 ASCII 字符的路径。
 ///
-/// MySQL 的 my.ini 解析器将反斜杠序列（\b \n \r \t \s）视为转义字符，
-/// 且非 ASCII 路径（如中文）在 GBK 编码的 Windows 上可能导致 mysqld
-/// 初始化失败。强制要求纯 ASCII 路径可避免这两类问题。
+/// 非 ASCII 路径（如中文）在 GBK 编码的 Windows 上可能导致 mysqld
+/// 初始化失败。强制要求纯 ASCII 路径可避免此问题。
+///
+/// 注：MySQL my.ini 中 `\b \n \r \t \s` 等反斜杠序列会被解析为转义字符，
+/// 但 `write_my_ini` 已将所有路径转为正斜杠（`/`），因此无需在此拦截。
 fn validate_install_path(path: &str) -> Result<(), String> {
     if !path.is_ascii() {
         return Err(format!(
@@ -75,17 +77,6 @@ fn validate_install_path(path: &str) -> Result<(), String> {
              MySQL 不支持中文路径，请选择纯英文路径（如 D:\\develop\\software）",
             path
         ));
-    }
-
-    let dangerous_seqs = [r"\b", r"\n", r"\r", r"\t", r"\s", r"\0"];
-    let lower = path.to_lowercase();
-    for seq in &dangerous_seqs {
-        if lower.contains(seq) {
-            return Err(format!(
-                "安装路径包含 MySQL 转义字符 '{seq}': {path}\n\
-                 请避免路径中出现 \\b \\n \\r \\t \\s 等组合"
-            ));
-        }
     }
     Ok(())
 }
