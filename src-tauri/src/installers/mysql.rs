@@ -131,13 +131,9 @@ fn write_my_ini(mysql_home: &str, port: u16) -> Result<(), String> {
         &format!("port={port}"),
         &format!("basedir={base}"),
         &format!("datadir={data}"),
-        &format!("lc-messages-dir={base}/share/english"),
         "max_connections=200",
         "character-set-server=utf8mb4",
-        "collation-server=utf8mb4_general_ci",
         "default-storage-engine=INNODB",
-        "default_authentication_plugin=mysql_native_password",
-        "skip-name-resolve",
         "",
         "[mysql]",
         "default-character-set=utf8mb4",
@@ -261,14 +257,76 @@ fn start_service(app: &AppHandle) -> Result<(), String> {
     Err("MySQL 服务启动失败，请手动检查。常见原因：端口被占用、缺少 VC++ 运行库、路径含中文".into())
 }
 
-/// 设置 root 用户密码（初始化时使用 --initialize-insecure 无密码）。
+/// 设置 root 用户密码。
+///
+/// 优先尝试直接连接设置密码（initialize-insecure 模式下 root 无密码）；
+/// 若失败则回退到 skip-grant-tables 安全模式：停服 → 无鉴权启动 →
+/// FLUSH PRIVILEGES → ALTER USER → 杀进程 → 重启正常服务。
 fn set_root_password(app: &AppHandle, mysql_home: &str, password: &str) {
     emit_status(app, "mysql", "config", "正在设置 root 密码...");
     let mysql_exe = format!("{mysql_home}\\bin\\mysql.exe");
-    let sql = format!("ALTER USER 'root'@'localhost' IDENTIFIED BY '{password}';");
-    let _ = Command::new(&mysql_exe)
+    let mysqld_exe = format!("{mysql_home}\\bin\\mysqld.exe");
+
+    let sql = format!(
+        "ALTER USER 'root'@'localhost' IDENTIFIED BY '{}'; FLUSH PRIVILEGES;",
+        password
+    );
+
+    let direct_ok = Command::new(&mysql_exe)
         .args(["-u", "root", "--skip-password", "-e", &sql])
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
+
+    if direct_ok {
+        return;
+    }
+
+    emit_status(
+        app,
+        "mysql",
+        "config",
+        "直接设置密码失败，切换到安全模式重置...",
+    );
+
+    let _ = Command::new("net").args(["stop", "MySQL80"]).output();
+    std::thread::sleep(std::time::Duration::from_secs(3));
+
+    let child = Command::new(&mysqld_exe)
+        .args(["--skip-grant-tables", "--shared-memory"])
+        .spawn();
+
+    let child = match child {
+        Ok(c) => c,
+        Err(e) => {
+            emit_status(
+                app,
+                "mysql",
+                "config",
+                &format!("⚠ 安全模式启动失败: {e}，请手动设置 root 密码"),
+            );
+            return;
+        }
+    };
+
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
+    let safe_sql = format!(
+        "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '{}';",
+        password
+    );
+    let _ = Command::new(&mysql_exe)
+        .args(["-u", "root", "-e", &safe_sql])
         .output();
+
+    let pid = child.id();
+    let _ = Command::new("taskkill")
+        .args(["/F", "/PID", &pid.to_string()])
+        .output();
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    let _ = Command::new("net").args(["start", "MySQL80"]).output();
+    std::thread::sleep(std::time::Duration::from_secs(3));
 }
 
 /// 配置 MYSQL_HOME 和 PATH 环境变量。

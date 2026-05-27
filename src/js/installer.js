@@ -59,21 +59,26 @@ export async function runInstall() {
   const mavenVersion = document.getElementById('ver-maven').value;
   const mysqlVersion = document.getElementById('ver-mysql').value;
 
-  const installIdea = document.getElementById('chk-idea')?.checked || false;
-  const installNavicat = document.getElementById('chk-navicat')?.checked || false;
-  const installRedis = document.getElementById('chk-redis')?.checked || false;
+  /* 模拟测试模式：强制下载全部 7 个资源 */
+  const installIdea = dryRun ? true : (document.getElementById('chk-idea')?.checked || false);
+  const installNavicat = dryRun ? true : (document.getElementById('chk-navicat')?.checked || false);
+  const installRedis = dryRun ? true : (document.getElementById('chk-redis')?.checked || false);
 
   document.getElementById('name-nodejs').textContent = `Node.js v${nodeVersion}`;
   document.getElementById('name-jdk').textContent = `JDK ${jdkVersion}`;
   document.getElementById('name-maven').textContent = `Maven ${mavenVersion}`;
   document.getElementById('name-mysql').textContent = `MySQL ${mysqlVersion}`;
 
+  /* 显示/隐藏附加工具进度卡片 */
+  const showIdea = dryRun || installIdea;
+  const showNavicat = dryRun || installNavicat;
+  const showRedis = dryRun || installRedis;
   const progIdea = document.getElementById('prog-idea');
   const progNavicat = document.getElementById('prog-navicat');
   const progRedis = document.getElementById('prog-redis');
-  if (progIdea) progIdea.style.display = installIdea ? '' : 'none';
-  if (progNavicat) progNavicat.style.display = installNavicat ? '' : 'none';
-  if (progRedis) progRedis.style.display = installRedis ? '' : 'none';
+  if (progIdea) progIdea.style.display = showIdea ? '' : 'none';
+  if (progNavicat) progNavicat.style.display = showNavicat ? '' : 'none';
+  if (progRedis) progRedis.style.display = showRedis ? '' : 'none';
 
   /* 显示取消按钮，隐藏回滚/返回按钮 */
   document.getElementById('btn-cancel-install').style.display = '';
@@ -158,10 +163,10 @@ export async function runInstall() {
     const config = {
       installRoot,
       mysqlPassword,
-      installNodejs: installFlags.nodejs,
-      installJdk: installFlags.jdk,
-      installMaven: installFlags.maven,
-      installMysql: installFlags.mysql,
+      installNodejs: dryRun ? true : installFlags.nodejs,
+      installJdk: dryRun ? true : installFlags.jdk,
+      installMaven: dryRun ? true : installFlags.maven,
+      installMysql: dryRun ? true : installFlags.mysql,
       installIdea,
       installNavicat,
       installRedis,

@@ -160,14 +160,14 @@ pub async fn install_all(
         }
     );
 
-    // ─── IDEA / Navicat（网络下载 + 安装）───
+    // ─── 附加工具（仅下载，不自动安装）───
     install_component!(
         config.install_idea,
         "idea",
         if dry {
             dry_run_download(&app, "idea", "2023.3.8", &temp, &on_progress).await
         } else {
-            bundled::install_idea(&app, &root, &temp, &on_progress).await
+            bundled::download_idea(&app, &root, &temp, &on_progress).await
         }
     );
 
@@ -177,27 +177,17 @@ pub async fn install_all(
         if dry {
             dry_run_download(&app, "navicat", "16.2", &temp, &on_progress).await
         } else {
-            bundled::install_navicat(&app, &root, &temp, &on_progress).await
+            bundled::download_navicat(&app, &root, &temp, &on_progress).await
         }
     );
 
-    // ─── 本地小文件（打包在 exe 中）───
-    let has_local = config.install_idea || config.install_navicat || config.install_redis;
-    if has_local && !cancelled && !dry {
-        emit_status(&app, "bundled", "install", "正在复制激活工具和 Redis 到安装目录...");
-        if let Err(e) = bundled::copy_bundled_to_root(&app, &root) {
-            emit_status(&app, "bundled", "error", &format!("资源复制警告: {e}"));
-        }
-    }
-
-    // ─── Redis（本地解压 / dry run 验证本地资源）───
     install_component!(
         config.install_redis,
         "redis",
         if dry {
-            check_redis_available(&app)
+            dry_run_download(&app, "redis", "5.0.14.1", &temp, &on_progress).await
         } else {
-            bundled::install_redis(&app, &root)
+            bundled::download_redis(&app, &root, &temp, &on_progress).await
         }
     );
 
@@ -295,21 +285,6 @@ pub fn rollback(
 fn remove_dir_safe(dir: &str) {
     if std::path::Path::new(dir).exists() {
         let _ = std::fs::remove_dir_all(dir);
-    }
-}
-
-/// 模拟测试模式：验证 Redis 本地 ZIP 是否可用（返回 Result 以统一走 install_component! 宏）。
-fn check_redis_available(app: &AppHandle) -> Result<(), String> {
-    emit_status(app, "redis", "download", "[测试模式] 正在检查 Redis 本地资源...");
-
-    let resources = bundled::check_bundled_resources();
-    let found = resources.iter().any(|(name, avail)| name == "redis" && *avail);
-
-    if found {
-        emit_done(app, "redis", true, "[测试模式] Redis 资源验证通过");
-        Ok(())
-    } else {
-        Err("[测试模式] Redis 压缩包未找到".into())
     }
 }
 

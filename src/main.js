@@ -38,35 +38,6 @@ populateVersionSelect('ver-jdk', JDK_VERSIONS);
 populateVersionSelect('ver-maven', MAVEN_VERSIONS);
 populateVersionSelect('ver-mysql', MYSQL_VERSIONS);
 
-// ─── 检查本地附加资源可用性 ─────────────────────────────────
-const { invoke: _invoke } = window.__TAURI__.core;
-(async function checkBundledResources() {
-  try {
-    const resources = await _invoke('check_bundled_resources');
-    const hintText = { idea: '网络下载', navicat: '网络下载', redis: '本地资源' };
-    let anyAvailable = false;
-    for (const [name, available] of resources) {
-      const chk = document.getElementById(`chk-${name}`);
-      const hint = document.getElementById(`hint-${name}`);
-      if (chk) {
-        chk.disabled = !available;
-        if (!available) {
-          chk.checked = false;
-          if (hint) hint.textContent = '（未找到安装包）';
-        } else {
-          anyAvailable = true;
-          if (hint) hint.textContent = `✓ ${hintText[name] || '已就绪'}`;
-        }
-      }
-    }
-    if (anyAvailable) {
-      document.getElementById('bundled-tools').style.display = '';
-    }
-  } catch (e) {
-    console.warn('检查附加资源失败', e);
-  }
-})();
-
 // ─── Step 1: 配置页事件 ────────────────────────────────────────
 
 /** 浏览按钮 → 选择安装目录 */

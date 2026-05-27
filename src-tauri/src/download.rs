@@ -24,6 +24,8 @@ const DOMESTIC_DOMAINS: &[&str] = &[
     "download.navicat.com.cn",
     "download3.navicat.com",
     "download.navicat.com",
+    "github.com",
+    "objects.githubusercontent.com",
 ];
 
 /// 在应用启动时调用，将国内镜像域名追加到 NO_PROXY 环境变量。
@@ -93,15 +95,15 @@ pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
             }
         },
         "mysql" => {
-            let minor = version.rsplit('.').next().unwrap_or("36");
-            let minor_num: u32 = minor.parse().unwrap_or(36);
-            let mut urls = vec![
-                format!("https://cdn.mysql.com/archives/mysql-8.0/mysql-{version}-winx64.zip"),
-            ];
-            if minor_num < 37 {
-                urls.push("https://cdn.mysql.com/Downloads/MySQL-8.0/mysql-8.0.37-winx64.zip".into());
+            MirrorSource {
+                urls: vec![
+                    format!("https://mirrors.tuna.tsinghua.edu.cn/mysql/downloads/MySQL-8.0/mysql-{version}-winx64.zip"),
+                    format!("https://mirrors.aliyun.com/mysql/MySQL-8.0/mysql-{version}-winx64.zip"),
+                    format!("https://cdn.mysql.com/archives/mysql-8.0/mysql-{version}-winx64.zip"),
+                    format!("https://cdn.mysql.com/Downloads/MySQL-8.0/mysql-{version}-winx64.zip"),
+                ],
+                filename: format!("mysql-{version}-winx64.zip"),
             }
-            MirrorSource { urls, filename: format!("mysql-{version}-winx64.zip") }
         },
         "maven" => MirrorSource {
             urls: vec![
@@ -127,6 +129,14 @@ pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
             ],
             filename: "navicat162_premium_cs_x64.exe".into(),
         },
+        "redis" => MirrorSource {
+            urls: vec![
+                format!("https://mirrors.huaweicloud.com/redis/redis-{version}.zip"),
+                format!("https://github.com/tporadowski/redis/releases/download/v{version}/Redis-x64-{version}.zip"),
+                format!("https://github.com/redis-windows/redis-windows/releases/download/{version}/Redis-{version}-Windows-x64-msys2.zip"),
+            ],
+            filename: format!("Redis-x64-{version}.zip"),
+        },
         _ => MirrorSource {
             urls: vec![],
             filename: String::new(),
@@ -149,6 +159,7 @@ pub fn get_mirrors(component: &str) -> MirrorSource {
         "mysql"   => "8.0.36",
         "idea"    => "2023.3.8",
         "navicat" => "16.2",
+        "redis"   => "5.0.14.1",
         _         => "",
     };
     get_mirrors_versioned(component, default_ver)
@@ -224,6 +235,7 @@ fn min_valid_size(component: &str) -> u64 {
         "mysql"   => 200 * 1024 * 1024,    // MySQL ZIP ~400MB
         "idea"    => 500 * 1024 * 1024,    // IDEA EXE ~700MB
         "navicat" => 50 * 1024 * 1024,     // Navicat EXE ~95MB
+        "redis"   => 3 * 1024 * 1024,      // Redis ZIP ~5MB
         _         => 1024 * 1024,
     }
 }
@@ -308,7 +320,7 @@ fn format_speed(bps: f64) -> String {
 /// 用于在不影响用户环境的情况下验证网络和链接有效性。
 #[tauri::command]
 pub async fn preflight_check() -> Result<Vec<PreflightResult>, String> {
-    let components = ["nodejs", "jdk", "maven", "mysql", "idea", "navicat"];
+    let components = ["nodejs", "jdk", "maven", "mysql", "idea", "navicat", "redis"];
     let client = reqwest::Client::builder()
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(20))

@@ -28,11 +28,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "resources/idea-activation.7z",
-      "resources/navicat-activation.7z",
-      "resources/Redis-x64-3.2.100.zip"
-    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

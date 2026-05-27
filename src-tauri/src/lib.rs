@@ -38,7 +38,6 @@ pub fn run() {
             detect::detect_environment,
             detect::verify::run_verify,
             installers::install_all,
-            installers::bundled::check_bundled_resources,
             download::preflight_check,
             cancel_install,
             rollback_install,

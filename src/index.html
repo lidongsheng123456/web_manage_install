@@ -89,27 +89,27 @@
             <p class="form-hint">当前版本为项目所需版本（仅提供单一版本选项）</p>
           </div>
 
-          <div class="component-list" id="bundled-tools" style="margin-top: 16px; display:none;">
+          <div class="component-list" id="bundled-tools" style="margin-top: 16px;">
             <h3>附加工具</h3>
-            <p class="form-hint" style="margin-bottom: 8px;">IDEA / Navicat 从官方镜像下载安装，Redis 从本地资源解压</p>
+            <p class="form-hint" style="margin-bottom: 8px;">仅下载到安装目录，不自动安装，请手动双击安装</p>
             <div class="bundled-grid">
               <label class="bundled-item" id="bundled-idea">
                 <input type="checkbox" id="chk-idea" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
                 <div class="comp-icon small idea" style="background:linear-gradient(135deg,#FC801D,#E64A19); color:#fff;">I</div>
                 <span>IntelliJ IDEA 2023.3.8</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-idea"></span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
               </label>
               <label class="bundled-item" id="bundled-navicat">
                 <input type="checkbox" id="chk-navicat" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
                 <div class="comp-icon small navicat" style="background:linear-gradient(135deg,#2196F3,#0D47A1); color:#fff;">N</div>
                 <span>Navicat Premium 16.2</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-navicat"></span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
               </label>
               <label class="bundled-item" id="bundled-redis">
                 <input type="checkbox" id="chk-redis" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
                 <div class="comp-icon small redis" style="background:linear-gradient(135deg,#D32F2F,#B71C1C); color:#fff;">R</div>
-                <span>Redis 3.2.100（仅解压）</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-redis"></span>
+                <span>Redis 5.0.14</span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载解压，免安装</span>
               </label>
             </div>
           </div>
@@ -119,7 +119,7 @@
               <input type="checkbox" id="dry-run" style="width:14px; height:14px; vertical-align:middle; accent-color:var(--primary); margin-right:6px;" />
               模拟测试模式（仅验证下载，不执行安装）
             </label>
-            <p class="form-hint">开启后验证所有镜像下载链接和本地资源可用性，不会修改系统环境变量和安装任何软件</p>
+            <p class="form-hint">开启后将下载全部 7 个资源验证镜像可用性，不会修改系统环境变量和安装任何软件</p>
           </div>
         </div>
         <div class="page-actions">
