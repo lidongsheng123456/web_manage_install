@@ -4,11 +4,63 @@
 //! - 多镜像自动故障转移（清华 → npmmirror → 华为云 → 官方）
 //! - 流式下载 + 实时进度推送（通过 Tauri Channel）
 //! - 已下载文件缓存检测（>1MB 视为有效缓存）
+//! - 代理环境智能处理（国内镜像直连，国外镜像走代理）
 
 use crate::types::{DownloadProgress, MirrorSource, PreflightResult};
 use futures_util::StreamExt;
 use std::path::Path;
 use tauri::ipc::Channel;
+
+const DOMESTIC_DOMAINS: &[&str] = &[
+    "mirrors.tuna.tsinghua.edu.cn",
+    "npmmirror.com",
+    "repo.huaweicloud.com",
+    "cdn.mysql.com",
+    "maven.aliyun.com",
+    "mirrors.aliyun.com",
+    "mirrors.huaweicloud.com",
+];
+
+/// 在应用启动时调用，将国内镜像域名追加到 NO_PROXY 环境变量。
+///
+/// reqwest 默认读取 ALL_PROXY/HTTP_PROXY/HTTPS_PROXY 走代理，
+/// 同时读取 NO_PROXY 跳过指定域名。此函数确保国内镜像源绕过代理直连，
+/// 国际镜像（nodejs.org、github.com 等）继续走用户配置的代理。
+pub fn configure_proxy_bypass() {
+    let has_proxy = std::env::var("ALL_PROXY").is_ok()
+        || std::env::var("all_proxy").is_ok()
+        || std::env::var("HTTP_PROXY").is_ok()
+        || std::env::var("http_proxy").is_ok()
+        || std::env::var("HTTPS_PROXY").is_ok()
+        || std::env::var("https_proxy").is_ok();
+
+    if !has_proxy {
+        return;
+    }
+
+    let existing = std::env::var("NO_PROXY")
+        .or_else(|_| std::env::var("no_proxy"))
+        .unwrap_or_default()
+        .to_lowercase();
+
+    let new_entries: Vec<&&str> = DOMESTIC_DOMAINS
+        .iter()
+        .filter(|d| !existing.contains(&d.to_lowercase()))
+        .collect();
+
+    if new_entries.is_empty() {
+        return;
+    }
+
+    let additions = new_entries.iter().map(|d| d.to_string()).collect::<Vec<_>>().join(",");
+    let combined = if existing.is_empty() {
+        additions
+    } else {
+        format!("{},{}", existing.trim_end_matches(','), additions)
+    };
+
+    std::env::set_var("NO_PROXY", &combined);
+}
 
 /// 根据组件标识和用户选择的版本号，返回对应的国内镜像 URL 列表和下载文件名。
 ///
