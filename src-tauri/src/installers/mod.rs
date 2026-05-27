@@ -160,32 +160,46 @@ pub async fn install_all(
         }
     );
 
-    // ─── 本地资源（bundled）───
-    let has_bundled = config.install_idea || config.install_navicat || config.install_redis;
-    if has_bundled && !cancelled {
-        if check_cancel(&app).is_err() {
-            cancelled = true;
-        } else if dry {
-            dry_run_bundled(&app, &config);
+    // ─── IDEA / Navicat（网络下载 + 安装）───
+    install_component!(
+        config.install_idea,
+        "idea",
+        if dry {
+            dry_run_download(&app, "idea", "2023.3.8", &temp, &on_progress).await
         } else {
-            emit_status(&app, "bundled", "install", "正在复制本地资源到安装目录...");
-            if let Err(e) = bundled::copy_resources_to_root(&app, &root) {
-                emit_status(&app, "bundled", "error", &format!("资源复制警告: {e}"));
-            }
+            bundled::install_idea(&app, &root, &temp, &on_progress).await
+        }
+    );
 
-            install_component!(config.install_idea, "idea", bundled::install_idea(&app, &root));
-            install_component!(
-                config.install_navicat,
-                "navicat",
-                bundled::install_navicat(&app, &root)
-            );
-            install_component!(
-                config.install_redis,
-                "redis",
-                bundled::install_redis(&app, &root)
-            );
+    install_component!(
+        config.install_navicat,
+        "navicat",
+        if dry {
+            dry_run_download(&app, "navicat", "16.2", &temp, &on_progress).await
+        } else {
+            bundled::install_navicat(&app, &root, &temp, &on_progress).await
+        }
+    );
+
+    // ─── 本地小文件（打包在 exe 中）───
+    let has_local = config.install_idea || config.install_navicat || config.install_redis;
+    if has_local && !cancelled && !dry {
+        emit_status(&app, "bundled", "install", "正在复制激活工具和 Redis 到安装目录...");
+        if let Err(e) = bundled::copy_bundled_to_root(&app, &root) {
+            emit_status(&app, "bundled", "error", &format!("资源复制警告: {e}"));
         }
     }
+
+    // ─── Redis（本地解压 / dry run 验证本地资源）───
+    install_component!(
+        config.install_redis,
+        "redis",
+        if dry {
+            check_redis_available(&app)
+        } else {
+            bundled::install_redis(&app, &root)
+        }
+    );
 
     // 清理临时下载目录
     if !dry {
@@ -284,39 +298,18 @@ fn remove_dir_safe(dir: &str) {
     }
 }
 
-/// 模拟测试模式：验证本地 bundled 资源是否可用。
-fn dry_run_bundled(app: &AppHandle, config: &InstallConfig) {
-    let checks = [
-        (config.install_idea, "idea", "IDEA"),
-        (config.install_navicat, "navicat", "Navicat"),
-        (config.install_redis, "redis", "Redis"),
-    ];
+/// 模拟测试模式：验证 Redis 本地 ZIP 是否可用（返回 Result 以统一走 install_component! 宏）。
+fn check_redis_available(app: &AppHandle) -> Result<(), String> {
+    emit_status(app, "redis", "download", "[测试模式] 正在检查 Redis 本地资源...");
 
-    for (enabled, comp, label) in &checks {
-        if !*enabled {
-            continue;
-        }
-        emit_status(app, comp, "download", &format!("[测试模式] 正在检查 {label} 本地资源..."));
+    let resources = bundled::check_bundled_resources();
+    let found = resources.iter().any(|(name, avail)| name == "redis" && *avail);
 
-        let resources = bundled::check_bundled_resources();
-        let found = resources.iter().any(|(name, avail)| name == comp && *avail);
-
-        if found {
-            emit_status(
-                app,
-                comp,
-                "config",
-                &format!("[测试模式] {label} 安装包已就绪，跳过实际安装"),
-            );
-            emit_done(app, comp, true, &format!("[测试模式] {label} 资源验证通过"));
-        } else {
-            emit_done(
-                app,
-                comp,
-                false,
-                &format!("[测试模式] {label} 安装包未找到，请放在应用同级目录或 public/ 下"),
-            );
-        }
+    if found {
+        emit_done(app, "redis", true, "[测试模式] Redis 资源验证通过");
+        Ok(())
+    } else {
+        Err("[测试模式] Redis 压缩包未找到".into())
     }
 }
 

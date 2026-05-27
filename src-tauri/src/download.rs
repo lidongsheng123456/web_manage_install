@@ -19,6 +19,11 @@ const DOMESTIC_DOMAINS: &[&str] = &[
     "maven.aliyun.com",
     "mirrors.aliyun.com",
     "mirrors.huaweicloud.com",
+    "download-cdn.jetbrains.com.cn",
+    "download.jetbrains.com.cn",
+    "download.navicat.com.cn",
+    "download3.navicat.com",
+    "download.navicat.com",
 ];
 
 /// 在应用启动时调用，将国内镜像域名追加到 NO_PROXY 环境变量。
@@ -105,6 +110,23 @@ pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
             ],
             filename: format!("apache-maven-{version}-bin.zip"),
         },
+        "idea" => MirrorSource {
+            urls: vec![
+                format!("https://download-cdn.jetbrains.com.cn/idea/ideaIU-{version}.exe"),
+                format!("https://download.jetbrains.com.cn/idea/ideaIU-{version}.exe"),
+                format!("https://download.jetbrains.com/idea/ideaIU-{version}.exe"),
+                format!("https://download-cdn.jetbrains.com/idea/ideaIU-{version}.exe"),
+            ],
+            filename: format!("ideaIU-{version}.exe"),
+        },
+        "navicat" => MirrorSource {
+            urls: vec![
+                "https://download.navicat.com.cn/download/navicat162_premium_cs_x64.exe".into(),
+                "https://download3.navicat.com/download/navicat162_premium_cs_x64.exe".into(),
+                "https://download.navicat.com/download/navicat162_premium_cs_x64.exe".into(),
+            ],
+            filename: "navicat162_premium_cs_x64.exe".into(),
+        },
         _ => MirrorSource {
             urls: vec![],
             filename: String::new(),
@@ -121,11 +143,13 @@ fn parse_jdk_version(ver: &str) -> (u32, &str) {
 /// 使用默认版本号获取镜像（兼容旧调用）
 pub fn get_mirrors(component: &str) -> MirrorSource {
     let default_ver = match component {
-        "nodejs" => "20.19.0",
-        "jdk"    => "17",
-        "maven"  => "3.9.6",
-        "mysql"  => "8.0.36",
-        _        => "",
+        "nodejs"  => "20.19.0",
+        "jdk"     => "17",
+        "maven"   => "3.9.6",
+        "mysql"   => "8.0.36",
+        "idea"    => "2023.3.8",
+        "navicat" => "16.2",
+        _         => "",
     };
     get_mirrors_versioned(component, default_ver)
 }
@@ -194,11 +218,13 @@ pub async fn download_with_version(
 /// 避免使用下载中断导致的不完整文件。
 fn min_valid_size(component: &str) -> u64 {
     match component {
-        "nodejs" => 20 * 1024 * 1024,   // Node.js MSI ~30MB
-        "jdk"    => 150 * 1024 * 1024,   // OpenJDK ZIP ~180MB
-        "maven"  => 5 * 1024 * 1024,     // Maven ZIP ~10MB
-        "mysql"  => 200 * 1024 * 1024,   // MySQL ZIP ~400MB
-        _        => 1024 * 1024,
+        "nodejs"  => 20 * 1024 * 1024,    // Node.js MSI ~30MB
+        "jdk"     => 150 * 1024 * 1024,    // OpenJDK ZIP ~180MB
+        "maven"   => 5 * 1024 * 1024,      // Maven ZIP ~10MB
+        "mysql"   => 200 * 1024 * 1024,    // MySQL ZIP ~400MB
+        "idea"    => 500 * 1024 * 1024,    // IDEA EXE ~700MB
+        "navicat" => 50 * 1024 * 1024,     // Navicat EXE ~95MB
+        _         => 1024 * 1024,
     }
 }
 
@@ -282,7 +308,7 @@ fn format_speed(bps: f64) -> String {
 /// 用于在不影响用户环境的情况下验证网络和链接有效性。
 #[tauri::command]
 pub async fn preflight_check() -> Result<Vec<PreflightResult>, String> {
-    let components = ["nodejs", "jdk", "maven", "mysql"];
+    let components = ["nodejs", "jdk", "maven", "mysql", "idea", "navicat"];
     let client = reqwest::Client::builder()
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(std::time::Duration::from_secs(20))

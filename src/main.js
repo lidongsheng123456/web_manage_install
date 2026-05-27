@@ -43,6 +43,7 @@ const { invoke: _invoke } = window.__TAURI__.core;
 (async function checkBundledResources() {
   try {
     const resources = await _invoke('check_bundled_resources');
+    const hintText = { idea: '网络下载', navicat: '网络下载', redis: '本地资源' };
     let anyAvailable = false;
     for (const [name, available] of resources) {
       const chk = document.getElementById(`chk-${name}`);
@@ -54,7 +55,7 @@ const { invoke: _invoke } = window.__TAURI__.core;
           if (hint) hint.textContent = '（未找到安装包）';
         } else {
           anyAvailable = true;
-          if (hint) hint.textContent = '✓ 已就绪';
+          if (hint) hint.textContent = `✓ ${hintText[name] || '已就绪'}`;
         }
       }
     }
