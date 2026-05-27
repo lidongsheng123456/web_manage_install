@@ -20,6 +20,7 @@ const USER_ENV: &str = r"Environment";
 pub fn set_system_env(key: &str, value: &str) -> Result<(), String> {
     // 尝试 HKLM（系统级）
     if try_set_hklm(key, value).is_ok() {
+        broadcast_env_change();
         return Ok(());
     }
 
@@ -30,7 +31,11 @@ pub fn set_system_env(key: &str, value: &str) -> Result<(), String> {
     }
 
     // 注册表都失败，用 setx 兜底
-    try_setx(key, value)
+    let result = try_setx(key, value);
+    if result.is_ok() {
+        broadcast_env_change();
+    }
+    result
 }
 
 /// 向 PATH 追加路径条目，自动降级。
@@ -71,6 +76,46 @@ pub fn append_to_path(new_entry: &str) -> Result<(), String> {
     }
     // setx 单次最大值 1024 字符，只追加新条目
     try_setx("PATH", &format!("{current_path};{new_entry}"))
+}
+
+/// 删除环境变量（用于回滚），尝试 HKLM → HKCU。
+pub fn remove_env(key: &str) {
+    let _ = RegKey::predef(HKEY_LOCAL_MACHINE)
+        .open_subkey_with_flags(SYS_ENV, KEY_SET_VALUE)
+        .and_then(|env| env.delete_value(key));
+    let _ = RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey_with_flags(USER_ENV, KEY_SET_VALUE)
+        .and_then(|env| env.delete_value(key));
+    broadcast_env_change();
+}
+
+/// 从 PATH 中移除指定路径条目（用于回滚），大小写不敏感。
+pub fn remove_from_path(entry: &str) {
+    let normalized = entry.trim_end_matches('\\').to_lowercase();
+
+    if let Ok(current) = read_path_from_hklm() {
+        let updated = remove_entry(&current, &normalized);
+        if updated != current {
+            let _ = try_write_path_hklm(&updated);
+        }
+    }
+    if let Ok(current) = read_path_from_hkcu() {
+        let updated = remove_entry(&current, &normalized);
+        if updated != current {
+            let _ = try_write_path_hkcu(&updated);
+        }
+    }
+    broadcast_env_change();
+}
+
+/// 从 PATH 字符串中移除匹配的条目
+fn remove_entry(path_str: &str, normalized_entry: &str) -> String {
+    path_str
+        .split(';')
+        .filter(|s| !s.is_empty())
+        .filter(|s| s.trim_end_matches('\\').to_lowercase() != *normalized_entry)
+        .collect::<Vec<_>>()
+        .join(";")
 }
 
 // ─── 内部实现 ──────────────────────────────────────────────────
@@ -146,9 +191,44 @@ fn append_entry(current: &str, new_entry: &str) -> String {
     }
 }
 
-/// 广播环境变量变更通知
+/// 广播 WM_SETTINGCHANGE 消息通知其他进程刷新环境变量。
+///
+/// Windows 文档要求修改注册表环境变量后发送此广播，
+/// 以便资源管理器和其他应用加载新的环境变量值。
+/// 使用 SendMessageTimeoutA 替代 setx 写虚拟变量的 hack，
+/// 更加标准和高效。
 fn broadcast_env_change() {
-    let _ = Command::new("cmd")
-        .args(["/C", "setx", "DEVENV_UPDATED", "1"])
-        .output();
+    #[cfg(windows)]
+    {
+        #[link(name = "user32")]
+        extern "system" {
+            fn SendMessageTimeoutA(
+                hwnd: isize,
+                msg: u32,
+                wparam: usize,
+                lparam: *const u8,
+                flags: u32,
+                timeout: u32,
+                result: *mut usize,
+            ) -> isize;
+        }
+
+        const HWND_BROADCAST: isize = 0xFFFF;
+        const WM_SETTINGCHANGE: u32 = 0x001A;
+        const SMTO_ABORTIFHUNG: u32 = 0x0002;
+
+        let param = b"Environment\0";
+        let mut result: usize = 0;
+        unsafe {
+            SendMessageTimeoutA(
+                HWND_BROADCAST,
+                WM_SETTINGCHANGE,
+                0,
+                param.as_ptr(),
+                SMTO_ABORTIFHUNG,
+                5000,
+                &mut result,
+            );
+        }
+    }
 }
