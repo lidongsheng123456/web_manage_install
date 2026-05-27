@@ -12,9 +12,9 @@
 | **JDK 17** (OpenJDK) | 国内镜像下载 | 自动配置 `JAVA_HOME` + `PATH` |
 | **Maven** 3.9.6 | 国内镜像下载 | 自动配置 `MAVEN_HOME` + `PATH` + 阿里云 `settings.xml` |
 | **MySQL** 8.0.36 | 国内镜像下载 | 自动初始化数据库、配置服务、设置 root 密码 |
-| **IntelliJ IDEA** 2023.3.8 | 本地安装包 | 静默安装，附带激活工具 |
-| **Navicat Premium** 16.2 | 本地安装包 | 静默安装，附带激活工具 |
-| **Redis** 3.2.100 | 本地安装包 | 解压即用（绿色免安装） |
+| **IntelliJ IDEA** 2023.3.8 | JetBrains 中国 CDN 下载 | 静默安装，激活工具随 exe 打包 |
+| **Navicat Premium** 16.2 | Navicat 中国站下载 | 静默安装，激活工具随 exe 打包 |
+| **Redis** 3.2.100 | 随 exe 打包 | 解压即用（绿色免安装） |
 
 ## 安装流程
 
@@ -39,12 +39,10 @@ web_manage_install/
 │       ├── installer.js           #     Step 3 安装逻辑 + 取消/回滚
 │       ├── results.js             #     Step 4 结果展示
 │       └── versions.js            #     版本号常量
-├── public/                        # 本地安装包资源（不随 Git 提交）
-│   ├── ideaIU-2023.3.8.exe
-│   ├── Idea激活.7z
-│   ├── navicat162_premium_cs_x64.exe
-│   ├── navicat激活.7z
-│   └── Redis-x64-3.2.100.zip
+├── public/                        # 小体积资源（打包进 exe）
+│   ├── idea-activation.7z         #   IDEA 激活工具 (~70KB)
+│   ├── navicat-activation.7z      #   Navicat 激活工具 (~600KB)
+│   └── Redis-x64-3.2.100.zip     #   Redis 压缩包 (~5MB)
 ├── src-tauri/                     # Rust 后端
 │   ├── Cargo.toml
 │   └── src/
@@ -75,9 +73,10 @@ web_manage_install/
 ## 技术特性
 
 ### 代理兼容
-应用启动时自动检测系统代理（`HTTP_PROXY` / `ALL_PROXY`），为国内镜像站配置 `NO_PROXY` 绕过：
-- 清华源、阿里云、华为云、npmmirror 等直连
-- 国际站点仍走用户代理
+应用启动时自动检测系统代理（`HTTP_PROXY` / `ALL_PROXY`），为所有下载域名配置 `NO_PROXY` 绕过：
+- 清华源、阿里云、华为云、npmmirror 等国内镜像直连
+- JetBrains 中国 CDN / Navicat 中国站直连
+- 避免代理导致国内下载变慢或失败
 
 ### 动态环境检测
 采用多策略检测，避免硬编码路径：
@@ -99,10 +98,22 @@ MySQL 安装针对中文 Windows 做了加固：
 - 安装过程中随时取消（基于 `AtomicBool` 令牌）
 - 回滚已安装组件（删除文件/目录 + 清理环境变量）
 
-### 本地资源管理
-勾选附加工具后，安装前自动将 `public/` 下所有资源复制到用户指定的安装路径：
-- 安装包：`ideaIU-2023.3.8.exe`、`navicat162_premium_cs_x64.exe`、`Redis-x64-3.2.100.zip`
-- 激活工具：`Idea激活.7z`、`navicat激活.7z`
+### 资源分发策略
+- **大体积安装包**（IDEA ~700MB / Navicat ~95MB）从官方中国 CDN 实时下载，不打包进 exe
+- **小体积工具**（激活工具 + Redis ZIP，共 ~6MB）打包在 exe 内随应用分发
+- 安装时自动将激活工具和 Redis 复制到用户指定的安装路径
+
+### 下载镜像
+所有组件均优先使用国内镜像/CDN，失败自动切换下一个：
+
+| 组件 | 镜像优先级 |
+|------|-----------|
+| Node.js | 清华源 → npmmirror → nodejs.org |
+| JDK | 华为云 → java.net → Adoptium |
+| Maven | 华为云 → Apache Archive |
+| MySQL | MySQL CDN |
+| IDEA | JetBrains 中国 CDN → JetBrains 国际 CDN |
+| Navicat | Navicat 中国站 → Navicat 国际站 |
 
 ## 开发
 
@@ -127,16 +138,16 @@ npm run tauri:build
 
 构建产物位于 `src-tauri/target/release/bundle/`。
 
-> **注意**：`public/` 下的安装包体积较大（约 770MB），不应提交到 Git。构建时它们会被打包到应用资源目录中。
+> **注意**：IDEA 和 Navicat 安装包从网络下载（不打包），`public/` 下仅存放小体积的激活工具和 Redis（~6MB），会打包进 exe。
 
 ## 模拟测试模式
 
 Step 1 可勾选「模拟测试模式」：
-- 网络资源：验证镜像下载链接可用性，不实际安装
-- 本地资源：验证安装包文件是否存在，不实际安装
-- 不修改系统环境变量
+- 6 个网络资源（Node/JDK/Maven/MySQL/IDEA/Navicat）：下载到临时目录验证镜像可用性
+- Redis：验证本地 ZIP 文件是否存在
+- 不执行任何安装操作，不修改系统环境变量
 
-适合在部署前预检环境。
+适合在部署前预检网络和资源。
 
 ## License
 
