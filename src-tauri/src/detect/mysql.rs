@@ -2,48 +2,80 @@
 //!
 //! 检测策略（按优先级）：
 //! 1. 使用最新注册表 PATH 执行 `mysql -V`
-//! 2. 通过 Windows 服务定位 MySQL 安装路径
-//! 3. 查询 MySQL 注册表键
-//! 4. 扫描常见安装目录
+//! 2. 从 MYSQL_HOME 环境变量定位
+//! 3. 通过 Windows 服务定位 MySQL 安装路径
+//! 4. 查询 MySQL AB 注册表键
+//! 5. 通过 `where mysql` 搜索 PATH
+//! 6. 查询 Uninstall 注册表获取安装位置
+//! 7. 扫描 Program Files 和常见安装目录
 
-use super::env_reader::{extract_ver, run_cmd_fresh, try_exe_at};
+use super::env_reader::*;
 use crate::types::ComponentStatus;
-
-/// 常见 MySQL 安装路径
-const COMMON_PATHS: &[&str] = &[
-    r"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
-    r"D:\develop\software\mysql\bin\mysql.exe",
-    r"D:\develop\software\mysql-8.0.36-winx64\bin\mysql.exe",
-    r"D:\develop\software\mysql-8.0.37-winx64\bin\mysql.exe",
-    r"C:\mysql\bin\mysql.exe",
-];
 
 pub fn detect(expected_prefix: &str) -> ComponentStatus {
     let expected_label = format!("{expected_prefix}.x");
 
     // 1) PATH 执行 mysql -V
-    if let Some(ver) = version_from_output(run_cmd_fresh("mysql", &["-V"])) {
-        return build_status(ver, expected_prefix, &expected_label);
+    if let Some(ver) = parse_mysql_output(run_cmd_fresh("mysql", &["-V"])) {
+        return status(ver, expected_prefix, &expected_label);
     }
 
-    // 2) Windows 服务 → 找到 mysql.exe
+    // 2) MYSQL_HOME 环境变量
+    for (k, v) in read_fresh_env_vars() {
+        if k == "MYSQL_HOME" {
+            let exe = format!(r"{}\bin\mysql.exe", v.trim_end_matches('\\'));
+            if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
+                return status(ver, expected_prefix, &expected_label);
+            }
+        }
+    }
+
+    // 3) Windows 服务 → 找到 mysql.exe
     if let Some(exe) = detect_via_service() {
-        if let Some(ver) = version_from_output(try_exe_at(&exe, &["-V"])) {
-            return build_status(ver, expected_prefix, &expected_label);
+        if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
         }
     }
 
-    // 3) 注册表
-    if let Some(exe) = detect_via_registry() {
-        if let Some(ver) = version_from_output(try_exe_at(&exe, &["-V"])) {
-            return build_status(ver, expected_prefix, &expected_label);
+    // 4) MySQL AB 注册表
+    if let Some(exe) = detect_via_mysql_registry() {
+        if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
         }
     }
 
-    // 4) 常见路径
-    for path in COMMON_PATHS {
-        if let Some(ver) = version_from_output(try_exe_at(path, &["-V"])) {
-            return build_status(ver, expected_prefix, &expected_label);
+    // 5) where 命令搜索
+    for path in find_via_where("mysql") {
+        if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
+        }
+    }
+
+    // 6) Uninstall 注册表
+    for loc in find_install_location("MySQL") {
+        let exe = format!(r"{}\bin\mysql.exe", loc.trim_end_matches('\\'));
+        if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
+        }
+    }
+
+    // 7) 扫描 Program Files
+    for path in scan_program_subdirs("MySQL", "MySQL Server", r"bin\mysql.exe") {
+        if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
+        }
+    }
+
+    // 8) 扫描常见安装目录
+    let patterns = &[r"mysql\bin\mysql.exe"];
+    for path in scan_common_install_dirs(patterns) {
+        if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
+        }
+    }
+    for path in scan_common_subdirs("", "mysql", r"bin\mysql.exe") {
+        if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
+            return status(ver, expected_prefix, &expected_label);
         }
     }
 
@@ -56,13 +88,13 @@ pub fn detect(expected_prefix: &str) -> ComponentStatus {
     }
 }
 
-fn version_from_output(output: Option<String>) -> Option<String> {
+fn parse_mysql_output(output: Option<String>) -> Option<String> {
     let text = output?;
     let ver = extract_ver(&text, r"(\d+\.\d+\.\d+)");
     if ver.is_empty() { None } else { Some(ver) }
 }
 
-fn build_status(ver: String, expected_prefix: &str, expected_label: &str) -> ComponentStatus {
+fn status(ver: String, expected_prefix: &str, expected_label: &str) -> ComponentStatus {
     ComponentStatus {
         name: "MySQL".into(),
         installed: true,
@@ -74,7 +106,17 @@ fn build_status(ver: String, expected_prefix: &str, expected_label: &str) -> Com
 
 /// 通过 `sc qc MySQL80` 查询 Windows 服务获取 MySQL 安装路径
 fn detect_via_service() -> Option<String> {
-    let output = run_cmd_fresh("sc", &["qc", "MySQL80"])?;
+    let svc_names = ["MySQL80", "MySQL81", "MySQL90", "MySQL", "MySql"];
+    for svc in &svc_names {
+        if let Some(exe) = try_service(svc) {
+            return Some(exe);
+        }
+    }
+    None
+}
+
+fn try_service(service_name: &str) -> Option<String> {
+    let output = run_cmd_fresh("sc", &["qc", service_name])?;
     let bin_path = extract_ver(&output, r"(?i)BINARY_PATH_NAME\s*:\s*(.+)");
     if bin_path.is_empty() {
         return None;
@@ -89,19 +131,22 @@ fn detect_via_service() -> Option<String> {
     }
 }
 
-/// 从注册表查找 MySQL 安装路径
-fn detect_via_registry() -> Option<String> {
+/// 从注册表查找 MySQL 安装路径（动态枚举版本号）
+fn detect_via_mysql_registry() -> Option<String> {
     use winreg::enums::*;
     use winreg::RegKey;
 
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    let reg_paths = [
-        r"SOFTWARE\MySQL AB\MySQL Server 8.0",
-        r"SOFTWARE\WOW6432Node\MySQL AB\MySQL Server 8.0",
-    ];
-    for reg_path in &reg_paths {
-        if let Ok(key) = hklm.open_subkey_with_flags(reg_path, KEY_READ) {
-            if let Ok(loc) = key.get_value::<String, _>("Location") {
+
+    for prefix in [r"SOFTWARE\MySQL AB", r"SOFTWARE\WOW6432Node\MySQL AB"] {
+        let Ok(ab_key) = hklm.open_subkey_with_flags(prefix, KEY_READ) else {
+            continue;
+        };
+        for name in ab_key.enum_keys().filter_map(|k| k.ok()) {
+            let Ok(sub) = ab_key.open_subkey_with_flags(&name, KEY_READ) else {
+                continue;
+            };
+            if let Ok(loc) = sub.get_value::<String, _>("Location") {
                 let exe = format!(r"{}\bin\mysql.exe", loc.trim_end_matches('\\'));
                 if std::path::Path::new(&exe).exists() {
                     return Some(exe);
