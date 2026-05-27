@@ -702,6 +702,50 @@ body {
 .verify-cmd-result.success { color: #4ade80; }
 .verify-cmd-result.fail { color: #f87171; }
 
+/* ── Danger Button ────────────────────────────────────────────── */
+.btn-danger {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-danger:hover { background: #b91c1c; }
+.btn-danger:active { transform: scale(0.97); }
+
+.action-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Bundled Tools Grid ───────────────────────────────────────── */
+.bundled-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bundled-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  font-size: 13px;
+}
+
+.bundled-item:hover { border-color: var(--primary); }
+.bundled-item:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

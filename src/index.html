@@ -89,6 +89,31 @@
             <p class="form-hint">当前版本为项目所需版本（仅提供单一版本选项）</p>
           </div>
 
+          <div class="component-list" id="bundled-tools" style="margin-top: 16px; display:none;">
+            <h3>附加工具（本地安装包）</h3>
+            <p class="form-hint" style="margin-bottom: 8px;">以下工具从本地安装包安装，无需联网下载</p>
+            <div class="bundled-grid">
+              <label class="bundled-item" id="bundled-idea">
+                <input type="checkbox" id="chk-idea" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
+                <div class="comp-icon small idea" style="background:linear-gradient(135deg,#FC801D,#E64A19); color:#fff;">I</div>
+                <span>IntelliJ IDEA 2023.3.8</span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-idea"></span>
+              </label>
+              <label class="bundled-item" id="bundled-navicat">
+                <input type="checkbox" id="chk-navicat" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
+                <div class="comp-icon small navicat" style="background:linear-gradient(135deg,#2196F3,#0D47A1); color:#fff;">N</div>
+                <span>Navicat Premium 16.2</span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-navicat"></span>
+              </label>
+              <label class="bundled-item" id="bundled-redis">
+                <input type="checkbox" id="chk-redis" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
+                <div class="comp-icon small redis" style="background:linear-gradient(135deg,#D32F2F,#B71C1C); color:#fff;">R</div>
+                <span>Redis 3.2.100（仅解压）</span>
+                <span class="form-hint" style="margin-left:auto; font-size:11px;" id="hint-redis"></span>
+              </label>
+            </div>
+          </div>
+
           <div class="form-group" style="margin-top: 16px;">
             <label>
               <input type="checkbox" id="dry-run" style="width:14px; height:14px; vertical-align:middle; accent-color:var(--primary); margin-right:6px;" />
@@ -171,6 +196,33 @@
               <div class="prog-bar-wrap"><div class="prog-bar" id="bar-mysql"></div></div>
               <div class="prog-detail" id="detail-mysql"></div>
             </div>
+            <div class="progress-card" id="prog-idea" style="display:none;">
+              <div class="prog-header">
+                <div class="comp-icon small" style="background:linear-gradient(135deg,#FC801D,#E64A19); color:#fff;">I</div>
+                <span class="prog-name" id="name-idea">IntelliJ IDEA</span>
+                <span class="prog-status" id="status-idea">等待中</span>
+              </div>
+              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-idea"></div></div>
+              <div class="prog-detail" id="detail-idea"></div>
+            </div>
+            <div class="progress-card" id="prog-navicat" style="display:none;">
+              <div class="prog-header">
+                <div class="comp-icon small" style="background:linear-gradient(135deg,#2196F3,#0D47A1); color:#fff;">N</div>
+                <span class="prog-name" id="name-navicat">Navicat Premium</span>
+                <span class="prog-status" id="status-navicat">等待中</span>
+              </div>
+              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-navicat"></div></div>
+              <div class="prog-detail" id="detail-navicat"></div>
+            </div>
+            <div class="progress-card" id="prog-redis" style="display:none;">
+              <div class="prog-header">
+                <div class="comp-icon small" style="background:linear-gradient(135deg,#D32F2F,#B71C1C); color:#fff;">R</div>
+                <span class="prog-name" id="name-redis">Redis</span>
+                <span class="prog-status" id="status-redis">等待中</span>
+              </div>
+              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-redis"></div></div>
+              <div class="prog-detail" id="detail-redis"></div>
+            </div>
           </div>
 
           <div class="log-area">
@@ -179,8 +231,12 @@
           </div>
         </div>
         <div class="page-actions">
-          <div></div>
-          <button class="btn-primary" id="btn-next-3" disabled>查看结果</button>
+          <button class="btn-danger" id="btn-cancel-install" style="display:none;">取消安装</button>
+          <div class="action-right">
+            <button class="btn-secondary" id="btn-rollback" style="display:none;">回滚已安装组件</button>
+            <button class="btn-secondary" id="btn-back-to-config" style="display:none;">返回配置</button>
+            <button class="btn-primary" id="btn-next-3" disabled>查看结果</button>
+          </div>
         </div>
       </section>
 

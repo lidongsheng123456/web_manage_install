@@ -1,20 +1,22 @@
 //! 组件安装器模块
 //!
 //! 每个组件有独立的安装子模块，统一通过 `install_all` 命令入口调度。
+//! 支持在组件之间检查取消信号，以及对已完成组件执行回滚。
 
+pub mod bundled;
 pub mod jdk;
 pub mod maven;
 pub mod mysql;
 pub mod node;
 mod utils;
 
-use crate::types::{DownloadProgress, InstallConfig, InstallEvent, InstallResult};
+use crate::env_config;
+use crate::types::{CancelToken, DownloadProgress, InstallConfig, InstallEvent, InstallResult};
+use std::process::Command;
 use tauri::ipc::Channel;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 /// 检查当前进程是否以管理员身份运行。
-///
-/// 通过尝试写入 HKLM 注册表来判断，避免依赖 Windows API。
 fn is_elevated() -> bool {
     use winreg::enums::*;
     use winreg::RegKey;
@@ -22,7 +24,8 @@ fn is_elevated() -> bool {
     hklm.open_subkey_with_flags(
         r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment",
         KEY_SET_VALUE,
-    ).is_ok()
+    )
+    .is_ok()
 }
 
 /// 向前端推送安装阶段状态事件。
@@ -53,9 +56,19 @@ pub(crate) fn emit_done(app: &AppHandle, component: &str, success: bool, msg: &s
     );
 }
 
+/// 检查取消令牌，如果已取消则返回 Err。
+fn check_cancel(app: &AppHandle) -> Result<(), String> {
+    let cancel = app.state::<CancelToken>();
+    if cancel.is_cancelled() {
+        Err("用户取消安装".into())
+    } else {
+        Ok(())
+    }
+}
+
 /// 统一安装入口：根据用户配置依次安装选中的组件。
 ///
-/// 每个组件按 下载 → 解压/安装 → 配置环境变量 的流水线执行，
+/// 每个组件之间会检查取消信号，取消后停止剩余组件安装。
 /// 结果通过 `install-status` 事件实时推送，全部完成后通过
 /// `install-complete` 事件发送汇总。
 #[tauri::command]
@@ -64,46 +77,113 @@ pub async fn install_all(
     config: InstallConfig,
     on_progress: Channel<DownloadProgress>,
 ) -> Result<Vec<InstallResult>, String> {
+    let cancel = app.state::<CancelToken>();
+    cancel.reset();
+
     let root = config.install_root.clone();
     let temp = format!("{root}\\_temp");
     std::fs::create_dir_all(&temp).ok();
 
-    // 非测试模式下检查管理员权限
     if !config.dry_run && !is_elevated() {
-        emit_status(&app, "nodejs", "config",
-            "提示: 未以管理员身份运行，环境变量将写入用户级别（HKCU）");
+        emit_status(
+            &app,
+            "nodejs",
+            "config",
+            "提示: 未以管理员身份运行，环境变量将写入用户级别（HKCU）",
+        );
     }
 
     let mut results = Vec::new();
     let dry = config.dry_run;
     let ver = &config;
+    let mut cancelled = false;
 
-    if config.install_nodejs {
-        if dry {
-            run_install(&app, "nodejs", dry_run_download(&app, "nodejs", &ver.node_version, &temp, &on_progress).await, &mut results);
-        } else {
-            run_install(&app, "nodejs", node::install(&app, &root, &temp, &ver.node_version, &on_progress).await, &mut results);
-        }
+    // ─── 宏：安装前检查取消信号 ───
+    macro_rules! install_component {
+        ($flag:expr, $name:expr, $install_expr:expr) => {
+            if $flag && !cancelled {
+                if check_cancel(&app).is_err() {
+                    cancelled = true;
+                    emit_status(&app, $name, "error", "安装已取消");
+                } else {
+                    run_install(&app, $name, $install_expr, &mut results);
+                }
+            }
+        };
     }
-    if config.install_jdk {
+
+    install_component!(
+        config.install_nodejs,
+        "nodejs",
         if dry {
-            run_install(&app, "jdk", dry_run_download(&app, "jdk", &ver.jdk_version, &temp, &on_progress).await, &mut results);
+            dry_run_download(&app, "nodejs", &ver.node_version, &temp, &on_progress).await
         } else {
-            run_install(&app, "jdk", jdk::install(&app, &root, &temp, &ver.jdk_version, &on_progress).await, &mut results);
+            node::install(&app, &root, &temp, &ver.node_version, &on_progress).await
         }
-    }
-    if config.install_maven {
+    );
+
+    install_component!(
+        config.install_jdk,
+        "jdk",
         if dry {
-            run_install(&app, "maven", dry_run_download(&app, "maven", &ver.maven_version, &temp, &on_progress).await, &mut results);
+            dry_run_download(&app, "jdk", &ver.jdk_version, &temp, &on_progress).await
         } else {
-            run_install(&app, "maven", maven::install(&app, &root, &temp, &ver.maven_version, &on_progress).await, &mut results);
+            jdk::install(&app, &root, &temp, &ver.jdk_version, &on_progress).await
         }
-    }
-    if config.install_mysql {
+    );
+
+    install_component!(
+        config.install_maven,
+        "maven",
         if dry {
-            run_install(&app, "mysql", dry_run_download(&app, "mysql", &ver.mysql_version, &temp, &on_progress).await, &mut results);
+            dry_run_download(&app, "maven", &ver.maven_version, &temp, &on_progress).await
         } else {
-            run_install(&app, "mysql", mysql::install(&app, &root, &temp, &ver.mysql_version, &config.mysql_password, &on_progress).await, &mut results);
+            maven::install(&app, &root, &temp, &ver.maven_version, &on_progress).await
+        }
+    );
+
+    install_component!(
+        config.install_mysql,
+        "mysql",
+        if dry {
+            dry_run_download(&app, "mysql", &ver.mysql_version, &temp, &on_progress).await
+        } else {
+            mysql::install(
+                &app,
+                &root,
+                &temp,
+                &ver.mysql_version,
+                &config.mysql_password,
+                &on_progress,
+            )
+            .await
+        }
+    );
+
+    // ─── 本地资源（bundled）───
+    let has_bundled = config.install_idea || config.install_navicat || config.install_redis;
+    if has_bundled && !cancelled {
+        if check_cancel(&app).is_err() {
+            cancelled = true;
+        } else if dry {
+            dry_run_bundled(&app, &config);
+        } else {
+            emit_status(&app, "bundled", "install", "正在复制本地资源到安装目录...");
+            if let Err(e) = bundled::copy_resources_to_root(&app, &root) {
+                emit_status(&app, "bundled", "error", &format!("资源复制警告: {e}"));
+            }
+
+            install_component!(config.install_idea, "idea", bundled::install_idea(&app, &root));
+            install_component!(
+                config.install_navicat,
+                "navicat",
+                bundled::install_navicat(&app, &root)
+            );
+            install_component!(
+                config.install_redis,
+                "redis",
+                bundled::install_redis(&app, &root)
+            );
         }
     }
 
@@ -112,12 +192,135 @@ pub async fn install_all(
         let _ = std::fs::remove_dir_all(&temp);
     }
 
+    if cancelled {
+        let cancelled_comps: Vec<String> = results.iter().map(|r| r.component.clone()).collect();
+        let _ = app.emit(
+            "install-cancelled",
+            serde_json::json!({
+                "completedComponents": cancelled_comps,
+                "message": "安装已取消，可选择回滚已完成的组件"
+            }),
+        );
+    }
+
     let _ = app.emit("install-complete", &results);
     Ok(results)
 }
 
-/// 模拟测试模式：仅执行下载验证，完成后推送成功事件。
-/// 不执行解压、安装、环境变量等操作，保护用户系统环境。
+/// 回滚已安装的组件：删除安装目录、移除环境变量、清理服务。
+pub fn rollback(
+    app: &AppHandle,
+    components: &[String],
+    install_root: &str,
+) -> Result<Vec<String>, String> {
+    let mut rolled_back = Vec::new();
+
+    for comp in components {
+        emit_status(app, comp, "config", &format!("正在回滚 {comp}..."));
+
+        match comp.as_str() {
+            "nodejs" => {
+                let dir = format!("{install_root}\\nodejs");
+                env_config::remove_from_path(&format!("{dir}"));
+                env_config::remove_env("NODE_HOME");
+                remove_dir_safe(&dir);
+                rolled_back.push("Node.js".into());
+            }
+            "jdk" => {
+                for major in ["17", "21"] {
+                    let dir = format!("{install_root}\\jdk{major}");
+                    if std::path::Path::new(&dir).exists() {
+                        env_config::remove_from_path(&format!("{dir}\\bin"));
+                        remove_dir_safe(&dir);
+                    }
+                }
+                env_config::remove_env("JAVA_HOME");
+                rolled_back.push("JDK".into());
+            }
+            "maven" => {
+                let dir = format!("{install_root}\\maven");
+                env_config::remove_from_path(&format!("{dir}\\bin"));
+                env_config::remove_env("MAVEN_HOME");
+                remove_dir_safe(&dir);
+                rolled_back.push("Maven".into());
+            }
+            "mysql" => {
+                let _ = Command::new("net").args(["stop", "MySQL80"]).output();
+                std::thread::sleep(std::time::Duration::from_secs(2));
+                let _ = Command::new("sc").args(["delete", "MySQL80"]).output();
+                let dir = format!("{install_root}\\mysql");
+                env_config::remove_from_path(&format!("{dir}\\bin"));
+                env_config::remove_env("MYSQL_HOME");
+                remove_dir_safe(&dir);
+                rolled_back.push("MySQL".into());
+            }
+            "idea" => {
+                let dir = format!("{install_root}\\IDEA");
+                remove_dir_safe(&dir);
+                rolled_back.push("IDEA".into());
+            }
+            "navicat" => {
+                let dir = format!("{install_root}\\Navicat");
+                remove_dir_safe(&dir);
+                rolled_back.push("Navicat".into());
+            }
+            "redis" => {
+                let dir = format!("{install_root}\\redis");
+                remove_dir_safe(&dir);
+                rolled_back.push("Redis".into());
+            }
+            _ => {}
+        }
+
+        emit_done(app, comp, true, &format!("{comp} 已回滚"));
+    }
+
+    Ok(rolled_back)
+}
+
+fn remove_dir_safe(dir: &str) {
+    if std::path::Path::new(dir).exists() {
+        let _ = std::fs::remove_dir_all(dir);
+    }
+}
+
+/// 模拟测试模式：验证本地 bundled 资源是否可用。
+fn dry_run_bundled(app: &AppHandle, config: &InstallConfig) {
+    let checks = [
+        (config.install_idea, "idea", "IDEA"),
+        (config.install_navicat, "navicat", "Navicat"),
+        (config.install_redis, "redis", "Redis"),
+    ];
+
+    for (enabled, comp, label) in &checks {
+        if !*enabled {
+            continue;
+        }
+        emit_status(app, comp, "download", &format!("[测试模式] 正在检查 {label} 本地资源..."));
+
+        let resources = bundled::check_bundled_resources();
+        let found = resources.iter().any(|(name, avail)| name == comp && *avail);
+
+        if found {
+            emit_status(
+                app,
+                comp,
+                "config",
+                &format!("[测试模式] {label} 安装包已就绪，跳过实际安装"),
+            );
+            emit_done(app, comp, true, &format!("[测试模式] {label} 资源验证通过"));
+        } else {
+            emit_done(
+                app,
+                comp,
+                false,
+                &format!("[测试模式] {label} 安装包未找到，请放在应用同级目录或 public/ 下"),
+            );
+        }
+    }
+}
+
+/// 模拟测试模式：仅执行下载验证。
 async fn dry_run_download(
     app: &AppHandle,
     component: &str,
@@ -125,15 +328,35 @@ async fn dry_run_download(
     temp_dir: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
-    emit_status(app, component, "download", &format!("[测试模式] 正在下载 {component}..."));
+    emit_status(
+        app,
+        component,
+        "download",
+        &format!("[测试模式] 正在下载 {component}..."),
+    );
     crate::download::download_with_version(component, version, temp_dir, on_progress).await?;
-    emit_status(app, component, "config", &format!("[测试模式] {component} 下载验证成功，跳过安装步骤"));
-    emit_done(app, component, true, &format!("[测试模式] {component} 下载验证通过"));
+    emit_status(
+        app,
+        component,
+        "config",
+        &format!("[测试模式] {component} 下载验证成功，跳过安装步骤"),
+    );
+    emit_done(
+        app,
+        component,
+        true,
+        &format!("[测试模式] {component} 下载验证通过"),
+    );
     Ok(())
 }
 
-/// 将单个组件的安装结果录入结果列表，失败时额外推送 done 事件。
-fn run_install(app: &AppHandle, name: &str, result: Result<(), String>, results: &mut Vec<InstallResult>) {
+/// 将单个组件的安装结果录入结果列表。
+fn run_install(
+    app: &AppHandle,
+    name: &str,
+    result: Result<(), String>,
+    results: &mut Vec<InstallResult>,
+) {
     match result {
         Ok(()) => results.push(InstallResult {
             component: name.into(),

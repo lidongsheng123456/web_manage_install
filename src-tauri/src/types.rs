@@ -4,6 +4,32 @@
 //! 统一使用 `camelCase` 序列化以匹配 JavaScript 命名习惯。
 
 use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicBool, Ordering};
+
+// ---------------------------------------------------------------------------
+// 安装取消令牌
+// ---------------------------------------------------------------------------
+
+/// 跨组件共享的取消信号，使用原子布尔保证线程安全。
+pub struct CancelToken(AtomicBool);
+
+impl CancelToken {
+    pub fn new() -> Self {
+        Self(AtomicBool::new(false))
+    }
+
+    pub fn cancel(&self) {
+        self.0.store(true, Ordering::SeqCst);
+    }
+
+    pub fn is_cancelled(&self) -> bool {
+        self.0.load(Ordering::SeqCst)
+    }
+
+    pub fn reset(&self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // 环境检测
@@ -102,6 +128,15 @@ pub struct InstallConfig {
     /// 用户选择的 MySQL 版本（如 "8.0.36"、"8.0.37"）
     #[serde(default = "default_mysql_ver")]
     pub mysql_version: String,
+    /// 是否安装 IntelliJ IDEA（从本地安装包）
+    #[serde(default)]
+    pub install_idea: bool,
+    /// 是否安装 Navicat Premium（从本地安装包）
+    #[serde(default)]
+    pub install_navicat: bool,
+    /// 是否解压 Redis（从本地压缩包）
+    #[serde(default)]
+    pub install_redis: bool,
 }
 
 fn default_node_ver() -> String { "20.19.0".into() }

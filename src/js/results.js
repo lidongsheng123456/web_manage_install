@@ -30,6 +30,9 @@ export function renderResults() {
     jdk: `JDK ${document.getElementById('ver-jdk').value}`,
     maven: `Maven ${document.getElementById('ver-maven').value}`,
     mysql: `MySQL ${document.getElementById('ver-mysql').value}`,
+    idea: 'IntelliJ IDEA 2023.3.8',
+    navicat: 'Navicat Premium 16.2',
+    redis: 'Redis 3.2.100',
   };
 
   const successCount = results.filter(r => r.success).length;

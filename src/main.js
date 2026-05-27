@@ -38,6 +38,34 @@ populateVersionSelect('ver-jdk', JDK_VERSIONS);
 populateVersionSelect('ver-maven', MAVEN_VERSIONS);
 populateVersionSelect('ver-mysql', MYSQL_VERSIONS);
 
+// ─── 检查本地附加资源可用性 ─────────────────────────────────
+const { invoke: _invoke } = window.__TAURI__.core;
+(async function checkBundledResources() {
+  try {
+    const resources = await _invoke('check_bundled_resources');
+    let anyAvailable = false;
+    for (const [name, available] of resources) {
+      const chk = document.getElementById(`chk-${name}`);
+      const hint = document.getElementById(`hint-${name}`);
+      if (chk) {
+        chk.disabled = !available;
+        if (!available) {
+          chk.checked = false;
+          if (hint) hint.textContent = '（未找到安装包）';
+        } else {
+          anyAvailable = true;
+          if (hint) hint.textContent = '✓ 已就绪';
+        }
+      }
+    }
+    if (anyAvailable) {
+      document.getElementById('bundled-tools').style.display = '';
+    }
+  } catch (e) {
+    console.warn('检查附加资源失败', e);
+  }
+})();
+
 // ─── Step 1: 配置页事件 ────────────────────────────────────────
 
 /** 浏览按钮 → 选择安装目录 */
@@ -89,15 +117,24 @@ function resetAndGoHome() {
   /* 重置按钮状态 */
   document.getElementById('btn-next-2').disabled = true;
   document.getElementById('btn-next-3').disabled = true;
+  document.getElementById('btn-cancel-install').style.display = 'none';
+  document.getElementById('btn-cancel-install').disabled = false;
+  document.getElementById('btn-cancel-install').textContent = '取消安装';
+  document.getElementById('btn-rollback').style.display = 'none';
+  document.getElementById('btn-back-to-config').style.display = 'none';
 
   /* 清空安装日志 */
   document.getElementById('log-content').innerHTML = '';
 
-  /* 重置进度卡片 */
+  /* 重置进度卡片（含附加工具） */
   document.querySelectorAll('.progress-card').forEach(c => c.classList.remove('done', 'error'));
   document.querySelectorAll('.prog-bar').forEach(b => { b.style.width = '0%'; b.className = 'prog-bar'; });
   document.querySelectorAll('.prog-status').forEach(s => { s.textContent = '等待中'; s.className = 'prog-status'; });
   document.querySelectorAll('.prog-detail').forEach(d => { d.textContent = ''; });
+  ['prog-idea', 'prog-navicat', 'prog-redis'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 
   /* 重置验证结果 */
   document.querySelectorAll('.verify-cmd-result').forEach(r => { r.textContent = ''; r.className = 'verify-cmd-result'; });

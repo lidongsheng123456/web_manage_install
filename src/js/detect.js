@@ -11,7 +11,7 @@
 
 const { invoke } = window.__TAURI__.core;
 
-/** 各组件是否需要安装的开关 */
+/** 各组件是否需要安装的开关（附加工具由 Step1 勾选控制，不参与检测） */
 export let installFlags = { nodejs: true, jdk: true, maven: true, mysql: true };
 
 /** 最近一次的检测结果 */
