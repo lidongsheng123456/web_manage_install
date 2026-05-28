@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use crate::install::{emit_done, emit_status};
 use crate::system::env_config;
 use std::process::Command;
@@ -60,9 +61,9 @@ fn rollback_maven(install_root: &str, rolled_back: &mut Vec<String>) {
 }
 
 fn rollback_mysql(install_root: &str, rolled_back: &mut Vec<String>) {
-    let _ = Command::new("net").args(["stop", "MySQL80"]).output();
+    let _ = hide_window(Command::new("net").args(["stop", "MySQL80"])).output();
     std::thread::sleep(std::time::Duration::from_secs(2));
-    let _ = Command::new("sc").args(["delete", "MySQL80"]).output();
+    let _ = hide_window(Command::new("sc").args(["delete", "MySQL80"])).output();
 
     let dir = format!("{install_root}\\mysql");
     env_config::remove_from_path(&format!("{dir}\\bin"));

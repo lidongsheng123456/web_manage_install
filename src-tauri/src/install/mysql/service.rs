@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use crate::install::emit_status;
 use crate::install::mysql::command::cmd_with_utf8;
 use std::path::Path;
@@ -7,9 +8,9 @@ use tauri::AppHandle;
 /// 停止并删除旧的 MySQL Windows 服务。
 pub fn cleanup_old_service(app: &AppHandle) {
     emit_status(app, "mysql", "config", "正在清理旧 MySQL 服务...");
-    let _ = Command::new("sc").args(["stop", "MySQL80"]).output();
+    let _ = hide_window(Command::new("sc").args(["stop", "MySQL80"])).output();
     std::thread::sleep(std::time::Duration::from_secs(2));
-    let _ = Command::new("sc").args(["delete", "MySQL80"]).output();
+    let _ = hide_window(Command::new("sc").args(["delete", "MySQL80"])).output();
     std::thread::sleep(std::time::Duration::from_secs(1));
 }
 
@@ -53,8 +54,7 @@ pub fn register_service(app: &AppHandle, mysql_home: &str) -> Result<(), String>
     emit_status(app, "mysql", "config", "正在注册 MySQL 系统服务...");
 
     let mysqld = format!("{mysql_home}\\bin\\mysqld.exe");
-    let output = Command::new(&mysqld)
-        .args(["--install", "MySQL80"])
+    let output = hide_window(Command::new(&mysqld).args(["--install", "MySQL80"]))
         .output()
         .map_err(|e| format!("注册服务失败: {e}"))?;
 
@@ -72,7 +72,7 @@ pub fn start_service(app: &AppHandle) -> Result<(), String> {
     emit_status(app, "mysql", "config", "正在启动 MySQL 服务...");
 
     for attempt in 1..=3 {
-        if let Ok(o) = Command::new("net").args(["start", "MySQL80"]).output() {
+        if let Ok(o) = hide_window(Command::new("net").args(["start", "MySQL80"])).output() {
             if o.status.success() {
                 std::thread::sleep(std::time::Duration::from_secs(2));
                 return Ok(());

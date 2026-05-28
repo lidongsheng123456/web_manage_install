@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use std::process::Command;
 
 /// 创建一个设置了 UTF-8 代码页的 Command，通过 cmd /C 执行。
@@ -18,5 +19,6 @@ pub fn cmd_with_utf8(program: &str, args: &[&str]) -> Command {
 
     let mut cmd = Command::new("cmd");
     cmd.args(["/C", &format!("chcp 65001 >nul 2>&1 && {}", args_str)]);
+    hide_window(&mut cmd);
     cmd
 }

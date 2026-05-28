@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use crate::install::emit_status;
 use std::process::Command;
 use tauri::AppHandle;
@@ -15,11 +16,12 @@ pub fn set_root_password(app: &AppHandle, mysql_home: &str, password: &str) {
         password
     );
 
-    let direct_ok = Command::new(&mysql_exe)
-        .args(["-u", "root", "--skip-password", "-e", &sql])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
+    let direct_ok = hide_window(
+        Command::new(&mysql_exe).args(["-u", "root", "--skip-password", "-e", &sql]),
+    )
+    .output()
+    .map(|o| o.status.success())
+    .unwrap_or(false);
 
     if direct_ok {
         return;
@@ -40,12 +42,13 @@ fn reset_password_with_skip_grants(
     mysqld_exe: &str,
     password: &str,
 ) {
-    let _ = Command::new("net").args(["stop", "MySQL80"]).output();
+    let _ = hide_window(Command::new("net").args(["stop", "MySQL80"])).output();
     std::thread::sleep(std::time::Duration::from_secs(3));
 
-    let child = Command::new(mysqld_exe)
-        .args(["--skip-grant-tables", "--shared-memory"])
-        .spawn();
+    let child = hide_window(
+        Command::new(mysqld_exe).args(["--skip-grant-tables", "--shared-memory"]),
+    )
+    .spawn();
 
     let child = match child {
         Ok(c) => c,
@@ -66,16 +69,12 @@ fn reset_password_with_skip_grants(
         "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '{}';",
         password
     );
-    let _ = Command::new(mysql_exe)
-        .args(["-u", "root", "-e", &safe_sql])
-        .output();
+    let _ = hide_window(Command::new(mysql_exe).args(["-u", "root", "-e", &safe_sql])).output();
 
     let pid = child.id();
-    let _ = Command::new("taskkill")
-        .args(["/F", "/PID", &pid.to_string()])
-        .output();
+    let _ = hide_window(Command::new("taskkill").args(["/F", "/PID", &pid.to_string()])).output();
     std::thread::sleep(std::time::Duration::from_secs(2));
 
-    let _ = Command::new("net").args(["start", "MySQL80"]).output();
+    let _ = hide_window(Command::new("net").args(["start", "MySQL80"])).output();
     std::thread::sleep(std::time::Duration::from_secs(3));
 }

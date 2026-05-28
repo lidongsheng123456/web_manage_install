@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use crate::detection::env::build_fresh_path;
 use std::path::Path;
 use std::process::Command;
@@ -9,6 +10,7 @@ pub fn find_via_where(exe_name: &str) -> Vec<String> {
     cmd.arg(exe_name)
         .env("PATH", &fresh_path)
         .stderr(std::process::Stdio::null());
+    hide_window(&mut cmd);
 
     match cmd.output() {
         Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout)

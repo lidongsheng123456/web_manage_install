@@ -5,24 +5,26 @@
 //! 带重试机制，确保刚安装完的工具能被检测到。
 
 use super::env::{build_fresh_path, read_fresh_env_vars};
+use crate::common::process::hide_window;
 use std::process::Command;
 
 /// 允许前端执行的验证命令白名单
-const ALLOWED_COMMANDS: &[(&str, &str, &[&str])] = &[
-    ("node -v", "node", &["-v"]),
-    ("java -version", "java", &["-version"]),
-    ("mvn -v", "mvn", &["-v"]),
-    ("mysql -V", "mysql", &["-V"]),
+const ALLOWED_COMMANDS: &[&str] = &[
+    "node -v",
+    "java -version",
+    "mvn -v",
+    "mysql -V",
 ];
 
 /// 运行一条验证命令并返回输出文本，带自动重试。
+///
+/// 通过 `cmd.exe /C` 执行，以正确解析 `.cmd`/`.bat`（如 mvn.cmd）
+/// 和 PATHEXT 环境变量。
 #[tauri::command]
 pub async fn run_verify(cmd: String) -> Result<String, String> {
-    let (program, args) = ALLOWED_COMMANDS
-        .iter()
-        .find(|(name, _, _)| *name == cmd.as_str())
-        .map(|(_, prog, args)| (*prog, *args))
-        .ok_or_else(|| "不允许的命令".to_string())?;
+    if !ALLOWED_COMMANDS.contains(&cmd.as_str()) {
+        return Err("不允许的命令".to_string());
+    }
 
     for attempt in 0..2 {
         if attempt > 0 {
@@ -32,8 +34,11 @@ pub async fn run_verify(cmd: String) -> Result<String, String> {
         let fresh_path = build_fresh_path();
         let fresh_envs = read_fresh_env_vars();
 
-        let mut cmd_builder = Command::new(program);
-        cmd_builder.args(args).env("PATH", &fresh_path);
+        let mut cmd_builder = Command::new("cmd");
+        cmd_builder
+            .args(["/C", &cmd])
+            .env("PATH", &fresh_path);
+        hide_window(&mut cmd_builder);
         for (k, v) in &fresh_envs {
             cmd_builder.env(k, v);
         }
@@ -52,11 +57,11 @@ pub async fn run_verify(cmd: String) -> Result<String, String> {
                 }
             }
             Err(_) if attempt == 0 => continue,
-            Err(e) => return Err(format!("{program} 执行失败: {e}")),
+            Err(e) => return Err(format!("{cmd} 执行失败: {e}")),
         }
     }
 
     Err(format!(
-        "{program} 未找到或无输出。请检查是否已正确安装并加入 PATH"
+        "{cmd}: 未找到或无输出。请检查是否已正确安装并加入 PATH"
     ))
 }

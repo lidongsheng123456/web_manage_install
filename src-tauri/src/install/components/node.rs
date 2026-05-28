@@ -3,6 +3,7 @@
 //! 通过 MSI 静默安装 Node.js 到指定目录，
 //! 然后设置 NODE_HOME 环境变量并配置 npm 使用淘宝镜像。
 
+use crate::common::process::hide_window;
 use crate::common::types::DownloadProgress;
 use crate::download;
 use crate::install::{emit_done, emit_status};
@@ -33,17 +34,18 @@ pub async fn install(
     let node_dir = format!("{install_root}\\nodejs");
     std::fs::create_dir_all(&node_dir).ok();
 
-    let output = Command::new("msiexec")
-        .args([
+    let output = hide_window(
+        Command::new("msiexec").args([
             "/i",
             &msi_path,
             "/qn",
             "/norestart",
             &format!("INSTALLDIR={node_dir}"),
             "ADDLOCAL=ALL",
-        ])
-        .output()
-        .map_err(|e| format!("运行 msiexec 失败: {e}"))?;
+        ]),
+    )
+    .output()
+    .map_err(|e| format!("运行 msiexec 失败: {e}"))?;
 
     let exit_code = output.status.code().unwrap_or(-1);
     // msiexec exit 0 = 成功, 3010 = 成功但需要重启
@@ -64,14 +66,15 @@ pub async fn install(
     emit_status(app, "nodejs", "config", "正在设置 npm 淘宝镜像...");
     let npm_cmd = format!("{node_dir}\\npm.cmd");
     if Path::new(&npm_cmd).exists() {
-        let _ = Command::new(&npm_cmd)
-            .args([
+        let _ = hide_window(
+            Command::new(&npm_cmd).args([
                 "config",
                 "set",
                 "registry",
                 "https://registry.npmmirror.com",
-            ])
-            .output();
+            ]),
+        )
+        .output();
     }
 
     emit_done(app, "nodejs", true, &format!("Node.js v{version} 安装完成"));

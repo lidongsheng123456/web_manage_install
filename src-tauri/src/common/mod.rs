@@ -4,5 +4,6 @@ pub mod cancel;
 pub mod detection;
 pub mod download;
 pub mod install;
+pub mod process;
 pub mod types;
 pub mod version;

@@ -1,3 +1,4 @@
+use crate::common::process::hide_window;
 use std::process::Command;
 use winreg::enums::*;
 use winreg::RegKey;
@@ -29,10 +30,10 @@ pub fn try_set_hkcu(key: &str, value: &str) -> Result<(), String> {
 
 /// 通过 setx 写入用户级环境变量，作为注册表 API 失败时的最后兜底。
 pub fn try_setx(key: &str, value: &str) -> Result<(), String> {
-    let output = Command::new("setx")
-        .args([key, value])
-        .output()
-        .map_err(|e| format!("setx 执行失败: {e}"))?;
+    let mut cmd = Command::new("setx");
+    cmd.args([key, value]);
+    hide_window(&mut cmd);
+    let output = cmd.output().map_err(|e| format!("setx 执行失败: {e}"))?;
     if output.status.success() {
         Ok(())
     } else {

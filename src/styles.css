@@ -1769,15 +1769,15 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
 
 .cloud {
   position: absolute;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.65) 100%);
+  width: 240px;
+  height: 72px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(240, 249, 255, 0.9) 100%);
   backdrop-filter: blur(5px);
   border-radius: 100px;
   box-shadow: 
-    0 12px 36px rgba(255, 255, 255, 0.4), 
-    inset 0 -6px 15px rgba(230, 242, 255, 0.6),
-    0 4px 10px rgba(148, 163, 184, 0.04);
-  filter: blur(0.5px);
-  opacity: 0.85;
+    0 12px 36px rgba(186, 216, 255, 0.5), 
+    inset 0 -6px 15px rgba(200, 225, 255, 0.7),
+    0 6px 20px rgba(148, 180, 220, 0.12);
 }
 
 /* 用伪元素拼接经典蓬松圆润云朵 */
@@ -1787,12 +1787,6 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
   position: absolute;
   background: inherit;
   border-radius: 50%;
-}
-
-/* 大云尺寸与伪元素微调 */
-.cloud {
-  width: 240px;
-  height: 72px;
 }
 
 .cloud::before {
@@ -1809,52 +1803,46 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
   right: 36px;
 }
 
-/* 不同大小、透明度和初始位置的云朵配置 */
+/* 不同大小、位置的云朵配置：固定位置 + 原地轻柔浮动 */
 .cloud-1 {
-  top: 15%;
+  top: 10%;
+  left: 8%;
   opacity: 0.92;
-  transform: scale(0.95);
-  animation: 
-    cloudDrift-1 55s linear infinite,
-    cloudBob-1 7s ease-in-out infinite alternate;
+  animation: cloudLife-1 16s ease-in-out infinite;
 }
 
 .cloud-2 {
-  top: 45%;
-  opacity: 0.75;
-  transform: scale(0.7);
-  filter: blur(1.5px);
-  animation: 
-    cloudDrift-2 85s linear infinite,
-    cloudBob-2 9s ease-in-out infinite alternate;
+  top: 42%;
+  right: 5%;
+  left: auto;
+  opacity: 0.85;
+  animation: cloudLife-2 20s ease-in-out 0.3s infinite;
 }
 
 .cloud-3 {
-  top: 75%;
-  opacity: 0.88;
-  transform: scale(1.15);
-  animation: 
-    cloudDrift-3 70s linear infinite,
-    cloudBob-3 8s ease-in-out infinite alternate;
+  bottom: 12%;
+  left: 15%;
+  top: auto;
+  opacity: 0.92;
+  animation: cloudLife-3 18s ease-in-out 0.5s infinite;
 }
 
 .cloud-4 {
-  top: 8%;
-  opacity: 0.55;
-  transform: scale(0.55);
-  filter: blur(2px);
-  animation: 
-    cloudDrift-4 110s linear infinite,
-    cloudBob-4 11s ease-in-out infinite alternate;
+  top: 5%;
+  right: 20%;
+  left: auto;
+  opacity: 0.7;
+  filter: blur(1px);
+  animation: cloudLife-4 24s ease-in-out 0.2s infinite;
 }
 
 .cloud-5 {
-  top: 60%;
-  opacity: 0.8;
-  transform: scale(0.85);
-  animation: 
-    cloudDrift-5 62s linear infinite,
-    cloudBob-5 6.5s ease-in-out infinite alternate;
+  bottom: 30%;
+  right: 12%;
+  left: auto;
+  top: auto;
+  opacity: 0.88;
+  animation: cloudLife-5 15s ease-in-out 0.6s infinite;
 }
 
 /* ── 🏰 玻璃拟态登录卡片 ────────────────────────────── */
@@ -2068,46 +2056,24 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
   40%, 80% { transform: translateX(6px); }
 }
 
-/* 云朵漂流动画 1-5 (在水平轴上匀速无限移动) */
-@keyframes cloudDrift-1 {
-  from { left: -250px; }
-  to { left: 100%; }
+/* 云朵原地浮动关键帧（从位置A飘到位置B再飘回来） */
+@keyframes cloudLife-1 {
+  0%, 100% { transform: translate(0, 0) scale(0.95); }
+  50% { transform: translate(12px, -10px) scale(0.95); }
 }
-@keyframes cloudDrift-2 {
-  from { left: -180px; }
-  to { left: 100%; }
+@keyframes cloudLife-2 {
+  0%, 100% { transform: translate(0, 0) scale(0.75); }
+  50% { transform: translate(-10px, 8px) scale(0.75); }
 }
-@keyframes cloudDrift-3 {
-  from { left: -300px; }
-  to { left: 100%; }
+@keyframes cloudLife-3 {
+  0%, 100% { transform: translate(0, 0) scale(1.1); }
+  50% { transform: translate(8px, -12px) scale(1.1); }
 }
-@keyframes cloudDrift-4 {
-  from { left: -150px; }
-  to { left: 100%; }
+@keyframes cloudLife-4 {
+  0%, 100% { transform: translate(0, 0) scale(0.6); }
+  50% { transform: translate(-6px, -5px) scale(0.6); }
 }
-@keyframes cloudDrift-5 {
-  from { left: -220px; }
-  to { left: 100%; }
-}
-
-/* 云朵垂直微幅上下浮动 1-5 */
-@keyframes cloudBob-1 {
-  from { transform: translateY(0) scale(0.95); }
-  to { transform: translateY(12px) scale(0.95); }
-}
-@keyframes cloudBob-2 {
-  from { transform: translateY(0) scale(0.7); }
-  to { transform: translateY(8px) scale(0.7); }
-}
-@keyframes cloudBob-3 {
-  from { transform: translateY(0) scale(1.15); }
-  to { transform: translateY(15px) scale(1.15); }
-}
-@keyframes cloudBob-4 {
-  from { transform: translateY(0) scale(0.55); }
-  to { transform: translateY(6px) scale(0.55); }
-}
-@keyframes cloudBob-5 {
-  from { transform: translateY(0) scale(0.85); }
-  to { transform: translateY(10px) scale(0.85); }
+@keyframes cloudLife-5 {
+  0%, 100% { transform: translate(0, 0) scale(0.85); }
+  50% { transform: translate(10px, 7px) scale(0.85); }
 }

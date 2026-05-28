@@ -28,6 +28,12 @@ async function bootstrapApp() {
 
   const { open } = window.__TAURI__.dialog;
 
+  try {
+    const version = await window.__TAURI__.app.getVersion();
+    const badge = document.getElementById('app-version');
+    if (badge) badge.textContent = `v${version}`;
+  } catch (_) {}
+
   const CORE_VERSION_SELECTS = ['ver-nodejs', 'ver-jdk', 'ver-maven', 'ver-mysql'];
 
   function populateVersionSelect(selectId, versions) {
