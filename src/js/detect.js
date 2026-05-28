@@ -59,12 +59,17 @@ function renderDetectResults(results) {
 
   /** 组件名 → 内部标识 */
   const nameMap = { 'Node.js': 'nodejs', 'JDK': 'jdk', 'Maven': 'maven', 'MySQL': 'mysql' };
-  /** 组件名 → [CSS 类, 图标字母] */
-  const iconMap = { 'Node.js': ['node', 'N'], 'JDK': ['jdk', 'J'], 'Maven': ['maven', 'M'], 'MySQL': ['mysql', 'D'] };
+  /** 组件名 → [CSS 类, 官方图标路径] */
+  const iconMap = {
+    'Node.js': ['node', '/assets/logos/nodejs.svg'],
+    'JDK': ['jdk', '/assets/logos/jdk.png'],
+    'Maven': ['maven', '/assets/logos/maven.png'],
+    'MySQL': ['mysql', '/assets/logos/mysql.svg'],
+  };
 
   container.innerHTML = results.map(r => {
     const key = nameMap[r.name] || r.name.toLowerCase();
-    const [iconClass, iconLetter] = iconMap[r.name] || ['node', '?'];
+    const [iconClass, iconSrc] = iconMap[r.name] || ['node', '/assets/logos/nodejs.svg'];
     let dotClass, actionClass, actionText, statusText;
 
     if (r.installed && r.versionMatch) {
@@ -92,7 +97,7 @@ function renderDetectResults(results) {
 
     return `
       <div class="detect-item">
-        <div class="comp-icon ${iconClass} small">${iconLetter}</div>
+        <div class="comp-icon ${iconClass} small"><img src="${iconSrc}" alt="${r.name}" /></div>
         <div class="status-dot ${dotClass}"></div>
         <div class="detect-info">
           <strong>${r.name}</strong>

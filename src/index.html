@@ -62,25 +62,25 @@
             <h3>组件版本配置</h3>
             <div class="version-grid">
               <div class="version-item">
-                <div class="comp-icon small node">N</div>
+                <div class="comp-icon small node"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
                 <select id="ver-nodejs">
                   <option value="20.19.0" selected>Node.js v20.19.0</option>
                 </select>
               </div>
               <div class="version-item">
-                <div class="comp-icon small jdk">J</div>
+                <div class="comp-icon small jdk"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
                 <select id="ver-jdk">
                   <option value="17" selected>JDK 17 (OpenJDK)</option>
                 </select>
               </div>
               <div class="version-item">
-                <div class="comp-icon small maven">M</div>
+                <div class="comp-icon small maven"><img src="/assets/logos/maven.png" alt="Maven" /></div>
                 <select id="ver-maven">
                   <option value="3.9.6" selected>Maven 3.9.6</option>
                 </select>
               </div>
               <div class="version-item">
-                <div class="comp-icon small mysql">D</div>
+                <div class="comp-icon small mysql"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
                 <select id="ver-mysql">
                   <option value="8.0.36" selected>MySQL 8.0.36</option>
                 </select>
@@ -95,19 +95,19 @@
             <div class="bundled-grid">
               <label class="bundled-item" id="bundled-idea">
                 <input type="checkbox" id="chk-idea" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small idea" style="background:linear-gradient(135deg,#FC801D,#E64A19); color:#fff;">I</div>
+                <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
                 <span>IntelliJ IDEA 2023.3.8</span>
                 <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
               </label>
               <label class="bundled-item" id="bundled-navicat">
                 <input type="checkbox" id="chk-navicat" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small navicat" style="background:linear-gradient(135deg,#2196F3,#0D47A1); color:#fff;">N</div>
-                <span>Navicat Premium 16.2</span>
+                <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
+                <span>Navicat Premium 17</span>
                 <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
               </label>
               <label class="bundled-item" id="bundled-redis">
                 <input type="checkbox" id="chk-redis" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small redis" style="background:linear-gradient(135deg,#D32F2F,#B71C1C); color:#fff;">R</div>
+                <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
                 <span>Redis 5.0.14</span>
                 <span class="form-hint" style="margin-left:auto; font-size:11px;">下载解压，免安装</span>
               </label>
@@ -162,7 +162,7 @@
           <div id="install-progress" class="install-progress">
             <div class="progress-card" id="prog-nodejs">
               <div class="prog-header">
-                <div class="comp-icon node small">N</div>
+                <div class="comp-icon node small"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
                 <span class="prog-name" id="name-nodejs">Node.js</span>
                 <span class="prog-status" id="status-nodejs">等待中</span>
               </div>
@@ -171,7 +171,7 @@
             </div>
             <div class="progress-card" id="prog-jdk">
               <div class="prog-header">
-                <div class="comp-icon jdk small">J</div>
+                <div class="comp-icon jdk small"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
                 <span class="prog-name" id="name-jdk">JDK</span>
                 <span class="prog-status" id="status-jdk">等待中</span>
               </div>
@@ -180,7 +180,7 @@
             </div>
             <div class="progress-card" id="prog-maven">
               <div class="prog-header">
-                <div class="comp-icon maven small">M</div>
+                <div class="comp-icon maven small"><img src="/assets/logos/maven.png" alt="Maven" /></div>
                 <span class="prog-name" id="name-maven">Maven</span>
                 <span class="prog-status" id="status-maven">等待中</span>
               </div>
@@ -189,7 +189,7 @@
             </div>
             <div class="progress-card" id="prog-mysql">
               <div class="prog-header">
-                <div class="comp-icon mysql small">D</div>
+                <div class="comp-icon mysql small"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
                 <span class="prog-name" id="name-mysql">MySQL</span>
                 <span class="prog-status" id="status-mysql">等待中</span>
               </div>
@@ -198,7 +198,7 @@
             </div>
             <div class="progress-card" id="prog-idea" style="display:none;">
               <div class="prog-header">
-                <div class="comp-icon small" style="background:linear-gradient(135deg,#FC801D,#E64A19); color:#fff;">I</div>
+                <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
                 <span class="prog-name" id="name-idea">IntelliJ IDEA</span>
                 <span class="prog-status" id="status-idea">等待中</span>
               </div>
@@ -207,7 +207,7 @@
             </div>
             <div class="progress-card" id="prog-navicat" style="display:none;">
               <div class="prog-header">
-                <div class="comp-icon small" style="background:linear-gradient(135deg,#2196F3,#0D47A1); color:#fff;">N</div>
+                <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
                 <span class="prog-name" id="name-navicat">Navicat Premium</span>
                 <span class="prog-status" id="status-navicat">等待中</span>
               </div>
@@ -216,7 +216,7 @@
             </div>
             <div class="progress-card" id="prog-redis" style="display:none;">
               <div class="prog-header">
-                <div class="comp-icon small" style="background:linear-gradient(135deg,#D32F2F,#B71C1C); color:#fff;">R</div>
+                <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
                 <span class="prog-name" id="name-redis">Redis</span>
                 <span class="prog-status" id="status-redis">等待中</span>
               </div>

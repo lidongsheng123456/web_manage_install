@@ -1,45 +1,56 @@
 /**
- * 版本配置模块
+ * 版本目录模块
  *
- * 定义各组件可选的版本列表。
- * 新增版本时只需在对应数组中添加条目，
- * 后端 download.rs 的 get_mirrors_versioned() 会根据版本号动态生成镜像 URL。
+ * 版本列表完全由后端实时请求获取；前端不再维护固定版本列表。
  */
 
-/** Node.js 可选版本（LTS 优先） */
-export const NODE_VERSIONS = [
-  { value: '20.19.0', label: 'v20.19.0 (LTS)', default: true },
-  { value: '22.13.1', label: 'v22.13.1 (LTS)' },
-  { value: '18.20.4', label: 'v18.20.4 (维护期 LTS)' },
-];
-
-/** JDK 可选版本 */
-export const JDK_VERSIONS = [
-  { value: '17', label: 'JDK 17 (LTS)', default: true },
-  { value: '21', label: 'JDK 21 (LTS)' },
-];
-
-/** Maven 可选版本 */
-export const MAVEN_VERSIONS = [
-  { value: '3.9.6', label: 'Maven 3.9.6', default: true },
-  { value: '3.9.9', label: 'Maven 3.9.9' },
-  { value: '3.8.8', label: 'Maven 3.8.8' },
-];
-
-/** MySQL 可选版本 */
-export const MYSQL_VERSIONS = [
-  { value: '8.0.36', label: 'MySQL 8.0.36', default: true },
-  { value: '8.0.37', label: 'MySQL 8.0.37' },
-];
+const { invoke } = window.__TAURI__.core;
 
 /**
- * 获取指定组件的默认版本号
+ * 从后端实时加载版本目录。
+ * @returns {Promise<object>} nodejs / jdk / maven / mysql 四组版本列表
+ */
+export async function loadVersionCatalog() {
+  const catalog = await invoke('get_version_catalog');
+  return normalizeCatalog(catalog);
+}
+
+/**
+ * 获取指定组件的默认版本号。
  * @param {string} component - 组件标识 (nodejs / jdk / maven / mysql)
+ * @param {object} catalog - 实时版本目录
  * @returns {string} 默认版本号
  */
-export function getDefaultVersion(component) {
-  const map = { nodejs: NODE_VERSIONS, jdk: JDK_VERSIONS, maven: MAVEN_VERSIONS, mysql: MYSQL_VERSIONS };
-  const list = map[component] || [];
+export function getDefaultVersion(component, catalog) {
+  const list = catalog?.[component] || [];
   const found = list.find(v => v.default);
   return found ? found.value : (list[0]?.value || '');
+}
+
+function normalizeCatalog(catalog) {
+  return {
+    nodejs: normalizeList(catalog?.nodejs, 'Node.js'),
+    jdk: normalizeList(catalog?.jdk, 'JDK'),
+    maven: normalizeList(catalog?.maven, 'Maven'),
+    mysql: normalizeList(catalog?.mysql, 'MySQL'),
+  };
+}
+
+function normalizeList(list, componentName) {
+  if (!Array.isArray(list) || list.length === 0) {
+    throw new Error(`${componentName} 未获取到可用版本`);
+  }
+
+  const normalized = list.map(item => ({
+    value: item.value,
+    label: item.label || item.value,
+    default: Boolean(item.default),
+    lts: Boolean(item.lts),
+    source: item.source || '实时请求',
+  }));
+
+  if (!normalized.some(item => item.default)) {
+    normalized[0].default = true;
+  }
+  return normalized;
 }

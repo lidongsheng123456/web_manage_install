@@ -368,17 +368,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
-  color: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .comp-icon.small { width: 28px; height: 28px; font-size: 12px; border-radius: 7px; }
-.comp-icon.node { background: #68a063; }
-.comp-icon.jdk { background: #e76f00; }
-.comp-icon.maven { background: #c71a36; }
-.comp-icon.mysql { background: #00758f; }
+.comp-icon img {
+  display: block;
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+.comp-icon.idea img,
+.comp-icon.navicat img {
+  width: 100%;
+  height: 100%;
+}
+.comp-icon.maven img,
+.comp-icon.jdk img,
+.comp-icon.mysql img {
+  width: 86%;
+  height: 86%;
+}
 
 .comp-info { display: flex; flex-direction: column; gap: 1px; }
 .comp-info strong { font-size: 13px; font-weight: 600; }

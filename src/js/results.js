@@ -31,7 +31,7 @@ export function renderResults() {
     maven: `Maven ${document.getElementById('ver-maven').value}`,
     mysql: `MySQL ${document.getElementById('ver-mysql').value}`,
     idea: 'IntelliJ IDEA 2023.3.8',
-    navicat: 'Navicat Premium 16.2',
+    navicat: 'Navicat Premium 17',
     redis: 'Redis 5.0.14.1',
   };
 
