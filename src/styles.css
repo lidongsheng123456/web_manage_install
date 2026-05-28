@@ -245,6 +245,34 @@ body {
   border-top: 1px solid rgba(148, 163, 184, 0.1);
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.btn-logout:hover {
+  background: var(--error-bg);
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
 }
 
@@ -1692,4 +1720,394 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
   .install-right .log-content {
     min-height: 160px;
   }
+}
+
+/* ================================================================
+   登录认证页 — 梦幻云端沉浸式 Glassmorphism 浅色主题
+   ================================================================ */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 极简、清透的云端静态浅色渐变 */
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #eef2ff 100%);
+  padding: 24px;
+  overflow: hidden; /* 裁剪漂出屏幕的云朵，防止出现滚动条 */
+  
+  /* 精致平滑过渡：供淡出动画使用 */
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  transition: 
+    opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+    transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+    filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.auth-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.auth-overlay.hidden {
+  display: none;
+}
+
+/* ── ☁️ 梦幻漂浮云朵 ────────────────────────────────── */
+.sky-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* 穿透点击，绝不干扰卡片操作 */
+  z-index: 1;
+}
+
+.cloud {
+  position: absolute;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.65) 100%);
+  backdrop-filter: blur(5px);
+  border-radius: 100px;
+  box-shadow: 
+    0 12px 36px rgba(255, 255, 255, 0.4), 
+    inset 0 -6px 15px rgba(230, 242, 255, 0.6),
+    0 4px 10px rgba(148, 163, 184, 0.04);
+  filter: blur(0.5px);
+  opacity: 0.85;
+}
+
+/* 用伪元素拼接经典蓬松圆润云朵 */
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+/* 大云尺寸与伪元素微调 */
+.cloud {
+  width: 240px;
+  height: 72px;
+}
+
+.cloud::before {
+  width: 96px;
+  height: 96px;
+  top: -48px;
+  left: 36px;
+}
+
+.cloud::after {
+  width: 132px;
+  height: 132px;
+  top: -72px;
+  right: 36px;
+}
+
+/* 不同大小、透明度和初始位置的云朵配置 */
+.cloud-1 {
+  top: 15%;
+  opacity: 0.92;
+  transform: scale(0.95);
+  animation: 
+    cloudDrift-1 55s linear infinite,
+    cloudBob-1 7s ease-in-out infinite alternate;
+}
+
+.cloud-2 {
+  top: 45%;
+  opacity: 0.75;
+  transform: scale(0.7);
+  filter: blur(1.5px);
+  animation: 
+    cloudDrift-2 85s linear infinite,
+    cloudBob-2 9s ease-in-out infinite alternate;
+}
+
+.cloud-3 {
+  top: 75%;
+  opacity: 0.88;
+  transform: scale(1.15);
+  animation: 
+    cloudDrift-3 70s linear infinite,
+    cloudBob-3 8s ease-in-out infinite alternate;
+}
+
+.cloud-4 {
+  top: 8%;
+  opacity: 0.55;
+  transform: scale(0.55);
+  filter: blur(2px);
+  animation: 
+    cloudDrift-4 110s linear infinite,
+    cloudBob-4 11s ease-in-out infinite alternate;
+}
+
+.cloud-5 {
+  top: 60%;
+  opacity: 0.8;
+  transform: scale(0.85);
+  animation: 
+    cloudDrift-5 62s linear infinite,
+    cloudBob-5 6.5s ease-in-out infinite alternate;
+}
+
+/* ── 🏰 玻璃拟态登录卡片 ────────────────────────────── */
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  z-index: 10; /* 在漂流云朵层之上 */
+  position: relative;
+  /* 极致磨砂玻璃杯质感 */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border-radius: 20px; /* 更加圆润高级 */
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 
+    0 15px 45px rgba(8, 145, 178, 0.05),
+    0 30px 80px rgba(37, 99, 235, 0.06), 
+    0 1px 2px rgba(255, 255, 255, 0.5) inset;
+  padding: 44px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  animation: 
+    authFadeIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    authCardFloat 6s ease-in-out infinite;
+}
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-brand svg {
+  filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.15));
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+.auth-brand h1 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 4px;
+}
+
+.auth-brand p {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #0284c7;
+  opacity: 0.85;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  margin-left: 2px;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-wrap input {
+  width: 100%;
+  padding: 12px 44px 12px 16px;
+  border-radius: 12px; /* 完美胶囊大圆角 */
+  border: 1.5px solid rgba(226, 232, 240, 0.8);
+  font-size: 0.95rem;
+  /* 透气轻质半透白底 */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  color: var(--text);
+  transition: all var(--transition);
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(148, 163, 184, 0.03);
+}
+
+.auth-input-wrap input:hover:not(:focus) {
+  border-color: rgba(14, 165, 233, 0.4);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.auth-input-wrap input:focus {
+  border-color: #0ea5e9;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 0 0 4px rgba(14, 165, 233, 0.15),
+    inset 0 1px 2px rgba(14, 165, 233, 0.05);
+}
+
+.auth-input-wrap input.shake {
+  animation: authShake 0.4s ease;
+}
+
+.auth-toggle-vis {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 6px;
+  display: flex;
+  border-radius: 8px;
+  transition: all var(--transition);
+}
+
+.auth-toggle-vis:hover {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.auth-error {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--error);
+  min-height: 1.2em;
+  margin: 0;
+  margin-left: 2px;
+  transition: opacity var(--transition);
+}
+
+.auth-submit {
+  margin-top: 6px;
+  width: 100%;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.18);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.auth-submit:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28);
+  filter: brightness(1.05);
+}
+
+.auth-submit:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.auth-footer {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* ── 🎬 极高精度动画关键帧 ───────────────────────────── */
+
+/* 天空极光流动渐变 */
+@keyframes skyGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 卡片浮入动画 */
+@keyframes authFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(32px) scale(0.95);
+    filter: blur(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* 卡片在天上的浮动感 */
+@keyframes authCardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 品牌LOGO微弱呼吸浮动 */
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-4px) rotate(1deg); }
+}
+
+/* 错误震颤 */
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* 云朵漂流动画 1-5 (在水平轴上匀速无限移动) */
+@keyframes cloudDrift-1 {
+  from { left: -250px; }
+  to { left: 100%; }
+}
+@keyframes cloudDrift-2 {
+  from { left: -180px; }
+  to { left: 100%; }
+}
+@keyframes cloudDrift-3 {
+  from { left: -300px; }
+  to { left: 100%; }
+}
+@keyframes cloudDrift-4 {
+  from { left: -150px; }
+  to { left: 100%; }
+}
+@keyframes cloudDrift-5 {
+  from { left: -220px; }
+  to { left: 100%; }
+}
+
+/* 云朵垂直微幅上下浮动 1-5 */
+@keyframes cloudBob-1 {
+  from { transform: translateY(0) scale(0.95); }
+  to { transform: translateY(12px) scale(0.95); }
+}
+@keyframes cloudBob-2 {
+  from { transform: translateY(0) scale(0.7); }
+  to { transform: translateY(8px) scale(0.7); }
+}
+@keyframes cloudBob-3 {
+  from { transform: translateY(0) scale(1.15); }
+  to { transform: translateY(15px) scale(1.15); }
+}
+@keyframes cloudBob-4 {
+  from { transform: translateY(0) scale(0.55); }
+  to { transform: translateY(6px) scale(0.55); }
+}
+@keyframes cloudBob-5 {
+  from { transform: translateY(0) scale(0.85); }
+  to { transform: translateY(10px) scale(0.85); }
 }
