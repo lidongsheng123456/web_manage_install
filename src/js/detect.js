@@ -9,6 +9,11 @@
  * 后端用实时注册表 PATH 执行命令，确保刚安装的组件也能检测到。
  */
 
+import nodeLogo from '../assets/logos/nodejs.svg';
+import jdkLogo from '../assets/logos/jdk.png';
+import mavenLogo from '../assets/logos/maven.png';
+import mysqlLogo from '../assets/logos/mysql.svg';
+
 const { invoke } = window.__TAURI__.core;
 
 /** 各组件是否需要安装的开关（附加工具由 Step1 勾选控制，不参与检测） */
@@ -59,17 +64,17 @@ function renderDetectResults(results) {
 
   /** 组件名 → 内部标识 */
   const nameMap = { 'Node.js': 'nodejs', 'JDK': 'jdk', 'Maven': 'maven', 'MySQL': 'mysql' };
-  /** 组件名 → [CSS 类, 官方图标路径] */
+  /** 组件名 → [CSS 类, 打包后可访问的官方图标 URL] */
   const iconMap = {
-    'Node.js': ['node', '/assets/logos/nodejs.svg'],
-    'JDK': ['jdk', '/assets/logos/jdk.png'],
-    'Maven': ['maven', '/assets/logos/maven.png'],
-    'MySQL': ['mysql', '/assets/logos/mysql.svg'],
+    'Node.js': ['node', nodeLogo],
+    'JDK': ['jdk', jdkLogo],
+    'Maven': ['maven', mavenLogo],
+    'MySQL': ['mysql', mysqlLogo],
   };
 
   container.innerHTML = results.map(r => {
     const key = nameMap[r.name] || r.name.toLowerCase();
-    const [iconClass, iconSrc] = iconMap[r.name] || ['node', '/assets/logos/nodejs.svg'];
+    const [iconClass, iconSrc] = iconMap[r.name] || ['node', nodeLogo];
     let dotClass, actionClass, actionText, statusText;
 
     if (r.installed && r.versionMatch) {
