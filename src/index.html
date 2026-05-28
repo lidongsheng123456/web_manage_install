@@ -7,119 +7,158 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <!-- 沉浸式高级质感亮色背景 -->
+  <div class="premium-light-bg"></div>
+
   <div class="app">
-    <header class="app-header">
-      <div class="header-left">
-        <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-          <defs><linearGradient id="g1" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/></linearGradient></defs>
+    <!-- 左侧极简科技感侧边栏 (纵向步进指示器) -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <svg width="32" height="32" viewBox="0 0 48 48" fill="none" class="brand-logo">
+          <defs>
+            <linearGradient id="g1" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#2563eb"/>
+              <stop offset="1" stop-color="#0891b2"/>
+            </linearGradient>
+          </defs>
           <rect x="6" y="10" width="36" height="3" rx="1.5" fill="url(#g1)" opacity=".85"/>
           <rect x="6" y="22.5" width="36" height="3" rx="1.5" fill="url(#g1)" opacity=".6"/>
           <rect x="6" y="35" width="36" height="3" rx="1.5" fill="url(#g1)" opacity=".4"/>
           <rect x="9" y="6" width="3" height="38" rx="1.5" fill="url(#g1)" opacity=".7"/>
           <rect x="36" y="6" width="3" height="38" rx="1.5" fill="url(#g1)" opacity=".7"/>
-          <path d="M17 13h7a11 11 0 0 1 0 22h-7z" fill="rgba(56,189,248,0.15)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M25 19l-3.5 6h5L23 31" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M17 13h7a11 11 0 0 1 0 22h-7z" fill="rgba(37,99,235,0.08)" stroke="url(#g1)" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M25 19l-3.5 6h5L23 31" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
-        <h1>东神脚手架 · 环境安装器</h1>
+        <div class="brand-text">
+          <h1>东神脚手架</h1>
+          <p class="brand-subtitle">环境一键安装器</p>
+        </div>
       </div>
-      <div class="stepper">
-        <div class="step active" data-step="1"><span class="step-num">1</span><span class="step-label">配置</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="2"><span class="step-num">2</span><span class="step-label">检测</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="3"><span class="step-num">3</span><span class="step-label">安装</span></div>
-        <div class="step-line"></div>
-        <div class="step" data-step="4"><span class="step-num">4</span><span class="step-label">完成</span></div>
-      </div>
-    </header>
 
+      <nav class="stepper">
+        <div class="step active" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-label">安装配置</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-label">系统检测</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-label">自动安装</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="4">
+          <span class="step-num">4</span>
+          <span class="step-label">完成部署</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="version-badge">v1.1.1</span>
+        <span class="power-hint">Based on Tauri 2</span>
+      </div>
+    </aside>
+
+    <!-- 右侧沉浸式工作区控制台 -->
     <main class="app-body">
-      <!-- Step 1: Configuration -->
+      <!-- 步骤 1：安装与版本配置 -->
       <section class="page active" id="page-1">
         <div class="page-content">
           <div class="section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            <h2>安装配置</h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <h2>基础与版本配置</h2>
           </div>
-          <p class="section-desc">配置安装路径和 MySQL 密码，开始安装前请确认以下设置。</p>
+          <p class="section-desc">配置目标软件的安装路径与 MySQL 密码，自定义附加开发工具。</p>
 
-          <div class="form-group">
-            <label for="install-path">安装路径</label>
-            <div class="input-row">
-              <input type="text" id="install-path" value="D:\develop\software" />
-              <button class="btn-secondary btn-small" id="btn-browse">浏览</button>
-            </div>
-            <p class="form-hint">所有组件将安装到此目录下对应的子文件夹中</p>
-          </div>
+          <!-- 左右流式自适应双卡片排版结构 -->
+          <div class="config-grid">
+            <!-- 左侧卡片：系统安装目录与安全密码配置 -->
+            <div class="config-card">
+              <h3 class="card-subtitle">系统路径与安全</h3>
+              
+              <div class="form-group">
+                <label for="install-path">安装目录</label>
+                <div class="input-row">
+                  <input type="text" id="install-path" value="D:\develop\software" />
+                  <button class="btn-secondary btn-small" id="btn-browse">浏览</button>
+                </div>
+                <p class="form-hint">各环境组件将安装在所选路径对应的专用子文件夹中</p>
+              </div>
 
-          <div class="form-group">
-            <label for="mysql-password">MySQL Root 密码</label>
-            <input type="text" id="mysql-password" value="123456" />
-            <p class="form-hint">MySQL root 用户的初始密码</p>
-          </div>
+              <div class="form-group">
+                <label for="mysql-password">MySQL Root 密码</label>
+                <input type="text" id="mysql-password" value="123456" />
+                <p class="form-hint">初始化 MySQL 服务时设置的超级管理员初始密码</p>
+              </div>
 
-          <div class="component-list">
-            <h3>组件版本配置</h3>
-            <div class="version-grid">
-              <div class="version-item">
-                <div class="comp-icon small node"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
-                <select id="ver-nodejs">
-                  <option value="20.19.0" selected>Node.js v20.19.0</option>
-                </select>
-              </div>
-              <div class="version-item">
-                <div class="comp-icon small jdk"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
-                <select id="ver-jdk">
-                  <option value="17" selected>JDK 17 (OpenJDK)</option>
-                </select>
-              </div>
-              <div class="version-item">
-                <div class="comp-icon small maven"><img src="/assets/logos/maven.png" alt="Maven" /></div>
-                <select id="ver-maven">
-                  <option value="3.9.6" selected>Maven 3.9.6</option>
-                </select>
-              </div>
-              <div class="version-item">
-                <div class="comp-icon small mysql"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
-                <select id="ver-mysql">
-                  <option value="8.0.36" selected>MySQL 8.0.36</option>
-                </select>
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="dry-run-checkbox">
+                  <input type="checkbox" id="dry-run" class="switch-checkbox" />
+                  <span>模拟部署模式 (仅下载验证，不写入系统环境变量)</span>
+                </label>
+                <p class="form-hint">开启后仅极速下载资源进行部署测试，不修改 Windows 系统注册表与环境变量</p>
               </div>
             </div>
-            <p class="form-hint">当前版本为项目所需版本（仅提供单一版本选项）</p>
-          </div>
 
-          <div class="component-list" id="bundled-tools" style="margin-top: 16px;">
-            <h3>附加工具</h3>
-            <p class="form-hint" style="margin-bottom: 8px;">仅下载到安装目录，不自动安装，请手动双击安装</p>
-            <div class="bundled-grid">
-              <label class="bundled-item" id="bundled-idea">
-                <input type="checkbox" id="chk-idea" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
-                <span>IntelliJ IDEA 2023.3.8</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
-              </label>
-              <label class="bundled-item" id="bundled-navicat">
-                <input type="checkbox" id="chk-navicat" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
-                <span>Navicat Premium 17</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载 exe，手动安装</span>
-              </label>
-              <label class="bundled-item" id="bundled-redis">
-                <input type="checkbox" id="chk-redis" style="width:14px; height:14px; accent-color:var(--primary); margin-right:6px;" />
-                <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
-                <span>Redis 5.0.14</span>
-                <span class="form-hint" style="margin-left:auto; font-size:11px;">下载解压，免安装</span>
-              </label>
+            <!-- 右侧卡片：核心环境版本与可选的附加辅助开发工具 -->
+            <div class="config-card">
+              <h3 class="card-subtitle">核心环境版本</h3>
+              <div class="version-grid">
+                <div class="version-item">
+                  <div class="comp-icon small node"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
+                  <select id="ver-nodejs">
+                    <option value="20.19.0" selected>Node.js v20.19.0</option>
+                  </select>
+                </div>
+                <div class="version-item">
+                  <div class="comp-icon small jdk"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
+                  <select id="ver-jdk">
+                    <option value="17" selected>JDK 17 (OpenJDK)</option>
+                  </select>
+                </div>
+                <div class="version-item">
+                  <div class="comp-icon small maven"><img src="/assets/logos/maven.png" alt="Maven" /></div>
+                  <select id="ver-maven">
+                    <option value="3.9.6" selected>Maven 3.9.6</option>
+                  </select>
+                </div>
+                <div class="version-item">
+                  <div class="comp-icon small mysql"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
+                  <select id="ver-mysql">
+                    <option value="8.0.36" selected>MySQL 8.0.36</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="component-list" id="bundled-tools" style="margin-top: 16px;">
+                <h3 class="card-subtitle-small">附加开发工具 (选填)</h3>
+                <p class="form-hint" style="margin-bottom: 8px;">仅自动下载离线安装包至安装目录，下载完成后需手动执行安装</p>
+                <div class="bundled-grid">
+                  <label class="bundled-item" id="bundled-idea">
+                    <input type="checkbox" id="chk-idea" />
+                    <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
+                    <span class="bundled-title">IntelliJ IDEA 2023.3.8</span>
+                    <span class="bundled-badge">手动安装</span>
+                  </label>
+                  <label class="bundled-item" id="bundled-navicat">
+                    <input type="checkbox" id="chk-navicat" />
+                    <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
+                    <span class="bundled-title">Navicat Premium 17</span>
+                    <span class="bundled-badge">手动安装</span>
+                  </label>
+                  <label class="bundled-item" id="bundled-redis">
+                    <input type="checkbox" id="chk-redis" />
+                    <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
+                    <span class="bundled-title">Redis 5.0.14</span>
+                    <span class="bundled-badge">免安装</span>
+                  </label>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div class="form-group" style="margin-top: 16px;">
-            <label>
-              <input type="checkbox" id="dry-run" style="width:14px; height:14px; vertical-align:middle; accent-color:var(--primary); margin-right:6px;" />
-              模拟测试模式（仅验证下载，不执行安装）
-            </label>
-            <p class="form-hint">开启后将下载全部 7 个资源验证镜像可用性，不会修改系统环境变量和安装任何软件</p>
           </div>
         </div>
         <div class="page-actions">
@@ -128,132 +167,149 @@
         </div>
       </section>
 
-      <!-- Step 2: Detection -->
+      <!-- 步骤 2：本地已有环境扫描与分析 -->
       <section class="page" id="page-2">
         <div class="page-content">
           <div class="section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <h2>环境检测</h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <h2>系统环境扫描</h2>
           </div>
-          <p class="section-desc">正在检测系统中已安装的开发工具...</p>
+          <p class="section-desc">正在智能检测您本地系统中已安装的环境及工具版本，以决定哪些项目自动跳过或重装。</p>
 
+          <!-- 2x2 网格检测卡片容器 -->
           <div id="detect-results" class="detect-results">
             <div class="detect-loading">
               <div class="spinner"></div>
-              <span>正在扫描环境...</span>
+              <span>正在扫描本地环境...</span>
+            </div>
+          </div>
+
+          <!-- 环境检测提示面板，精美填充底部留白 -->
+          <div class="detect-summary-panel">
+            <div class="summary-icon">💡</div>
+            <div class="summary-body">
+              <h4>环境检测提示</h4>
+              <p>系统已针对 JDK, Maven, MySQL 和 Node.js 进行了深度可用性扫描。标记为 <span class="badge-skip">已安装</span> 的组件表示本地已存在合适版本，我们将不会对其重复覆盖；标记为 <span class="badge-install">将安装</span> 的组件将由一键管道自动为您下载和安装。</p>
             </div>
           </div>
         </div>
         <div class="page-actions">
           <button class="btn-secondary" id="btn-prev-2">上一步</button>
-          <button class="btn-primary" id="btn-next-2" disabled>开始安装</button>
+          <button class="btn-primary" id="btn-next-2" disabled>确认开始安装</button>
         </div>
       </section>
 
-      <!-- Step 3: Install -->
+      <!-- 步骤 3：自动下载与后台自动部署管道 -->
       <section class="page" id="page-3">
-        <div class="page-content">
-          <div class="section-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <h2>下载与安装</h2>
-          </div>
-          <p class="section-desc">正在从国内镜像下载并安装组件，请勿关闭窗口。</p>
+        <div class="page-content flex-content-row">
+          <!-- 左栏：一键自动化多管线流式部署进度 -->
+          <div class="install-left">
+            <div class="section-title">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <h2>自动部署管道</h2>
+            </div>
+            <p class="section-desc" style="margin-bottom: 16px;">正在从国内高速镜像源拉取资源并执行一键安装，请在此期间保持网络畅通。</p>
 
-          <div id="install-progress" class="install-progress">
-            <div class="progress-card" id="prog-nodejs">
-              <div class="prog-header">
-                <div class="comp-icon node small"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
-                <span class="prog-name" id="name-nodejs">Node.js</span>
-                <span class="prog-status" id="status-nodejs">等待中</span>
+            <div id="install-progress" class="install-progress">
+              <div class="progress-card" id="prog-nodejs">
+                <div class="prog-header">
+                  <div class="comp-icon node small"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
+                  <span class="prog-name" id="name-nodejs">Node.js</span>
+                  <span class="prog-status" id="status-nodejs">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-nodejs"></div></div>
+                <div class="prog-detail" id="detail-nodejs"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-nodejs"></div></div>
-              <div class="prog-detail" id="detail-nodejs"></div>
-            </div>
-            <div class="progress-card" id="prog-jdk">
-              <div class="prog-header">
-                <div class="comp-icon jdk small"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
-                <span class="prog-name" id="name-jdk">JDK</span>
-                <span class="prog-status" id="status-jdk">等待中</span>
+              <div class="progress-card" id="prog-jdk">
+                <div class="prog-header">
+                  <div class="comp-icon jdk small"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
+                  <span class="prog-name" id="name-jdk">JDK</span>
+                  <span class="prog-status" id="status-jdk">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-jdk"></div></div>
+                <div class="prog-detail" id="detail-jdk"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-jdk"></div></div>
-              <div class="prog-detail" id="detail-jdk"></div>
-            </div>
-            <div class="progress-card" id="prog-maven">
-              <div class="prog-header">
-                <div class="comp-icon maven small"><img src="/assets/logos/maven.png" alt="Maven" /></div>
-                <span class="prog-name" id="name-maven">Maven</span>
-                <span class="prog-status" id="status-maven">等待中</span>
+              <div class="progress-card" id="prog-maven">
+                <div class="prog-header">
+                  <div class="comp-icon maven small"><img src="/assets/logos/maven.png" alt="Maven" /></div>
+                  <span class="prog-name" id="name-maven">Maven</span>
+                  <span class="prog-status" id="status-maven">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-maven"></div></div>
+                <div class="prog-detail" id="detail-maven"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-maven"></div></div>
-              <div class="prog-detail" id="detail-maven"></div>
-            </div>
-            <div class="progress-card" id="prog-mysql">
-              <div class="prog-header">
-                <div class="comp-icon mysql small"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
-                <span class="prog-name" id="name-mysql">MySQL</span>
-                <span class="prog-status" id="status-mysql">等待中</span>
+              <div class="progress-card" id="prog-mysql">
+                <div class="prog-header">
+                  <div class="comp-icon mysql small"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
+                  <span class="prog-name" id="name-mysql">MySQL</span>
+                  <span class="prog-status" id="status-mysql">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-mysql"></div></div>
+                <div class="prog-detail" id="detail-mysql"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-mysql"></div></div>
-              <div class="prog-detail" id="detail-mysql"></div>
-            </div>
-            <div class="progress-card" id="prog-idea" style="display:none;">
-              <div class="prog-header">
-                <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
-                <span class="prog-name" id="name-idea">IntelliJ IDEA</span>
-                <span class="prog-status" id="status-idea">等待中</span>
+              <div class="progress-card" id="prog-idea" style="display:none;">
+                <div class="prog-header">
+                  <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
+                  <span class="prog-name" id="name-idea">IntelliJ IDEA</span>
+                  <span class="prog-status" id="status-idea">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-idea"></div></div>
+                <div class="prog-detail" id="detail-idea"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-idea"></div></div>
-              <div class="prog-detail" id="detail-idea"></div>
-            </div>
-            <div class="progress-card" id="prog-navicat" style="display:none;">
-              <div class="prog-header">
-                <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
-                <span class="prog-name" id="name-navicat">Navicat Premium</span>
-                <span class="prog-status" id="status-navicat">等待中</span>
+              <div class="progress-card" id="prog-navicat" style="display:none;">
+                <div class="prog-header">
+                  <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
+                  <span class="prog-name" id="name-navicat">Navicat Premium</span>
+                  <span class="prog-status" id="status-navicat">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-navicat"></div></div>
+                <div class="prog-detail" id="detail-navicat"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-navicat"></div></div>
-              <div class="prog-detail" id="detail-navicat"></div>
-            </div>
-            <div class="progress-card" id="prog-redis" style="display:none;">
-              <div class="prog-header">
-                <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
-                <span class="prog-name" id="name-redis">Redis</span>
-                <span class="prog-status" id="status-redis">等待中</span>
+              <div class="progress-card" id="prog-redis" style="display:none;">
+                <div class="prog-header">
+                  <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
+                  <span class="prog-name" id="name-redis">Redis</span>
+                  <span class="prog-status" id="status-redis">等待中</span>
+                </div>
+                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-redis"></div></div>
+                <div class="prog-detail" id="detail-redis"></div>
               </div>
-              <div class="prog-bar-wrap"><div class="prog-bar" id="bar-redis"></div></div>
-              <div class="prog-detail" id="detail-redis"></div>
             </div>
           </div>
 
-          <div class="log-area">
-            <h4>安装日志</h4>
-            <div id="log-content" class="log-content"></div>
+          <!-- 右栏：全幅等高终端控制台事件监控流 -->
+          <div class="install-right">
+            <div class="log-area">
+              <h4>部署事件监控流</h4>
+              <div id="log-content" class="log-content"></div>
+            </div>
           </div>
         </div>
+        
         <div class="page-actions">
-          <button class="btn-danger" id="btn-cancel-install" style="display:none;">取消安装</button>
+          <button class="btn-danger" id="btn-cancel-install" style="display:none;">取消部署任务</button>
           <div class="action-right">
-            <button class="btn-secondary" id="btn-rollback" style="display:none;">回滚已安装组件</button>
-            <button class="btn-secondary" id="btn-back-to-config" style="display:none;">返回配置</button>
-            <button class="btn-primary" id="btn-next-3" disabled>查看结果</button>
+            <button class="btn-secondary" id="btn-rollback" style="display:none;">一键卸载回滚</button>
+            <button class="btn-secondary" id="btn-back-to-config" style="display:none;">修改参数</button>
+            <button class="btn-primary" id="btn-next-3" disabled>查看部署报告</button>
           </div>
         </div>
       </section>
 
-      <!-- Step 4: Complete -->
+      <!-- 步骤 4：部署成果报告与快速指令验证 -->
       <section class="page" id="page-4">
         <div class="page-content center-content">
           <div id="result-icon" class="result-icon success">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           </div>
-          <h2 id="result-title">安装完成</h2>
-          <p id="result-desc" class="section-desc">所有组件均已成功安装并配置完毕。</p>
+          <h2 id="result-title">环境安装圆满成功</h2>
+          <p id="result-desc" class="section-desc">已成功在目标路径完成全部开发环境的自动解压、安全配置与注册表写入。</p>
 
           <div id="result-list" class="result-list"></div>
 
           <div class="verify-hint">
-            <h4>验证安装</h4>
-            <p>点击下方命令即可直接验证（无需手动打开终端）：</p>
+            <h4>快速交互式验证</h4>
+            <p>双击或直接点击以下预设验证指令，即可秒级读取当前安装的系统实际版本：</p>
             <div class="verify-commands">
               <div class="verify-cmd" data-cmd="node -v">
                 <span class="verify-cmd-text">node -v</span>
@@ -272,12 +328,12 @@
                 <span class="verify-cmd-result" id="verify-mysql"></span>
               </div>
             </div>
-            <button class="btn-secondary btn-small" id="btn-verify-all" style="margin-top: 10px;">一键验证全部</button>
+            <button class="btn-secondary btn-small" id="btn-verify-all" style="margin-top: 10px; width: 100%;">一键验证全部组件</button>
           </div>
         </div>
         <div class="page-actions">
-          <button class="btn-secondary" id="btn-restart">返回首页</button>
-          <button class="btn-primary" id="btn-finish">关闭窗口</button>
+          <button class="btn-secondary" id="btn-restart">返回基础配置</button>
+          <button class="btn-primary" id="btn-finish">完成并关闭</button>
         </div>
       </section>
     </main>

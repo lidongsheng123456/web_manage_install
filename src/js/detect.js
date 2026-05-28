@@ -109,8 +109,8 @@ function renderDetectResults(results) {
           <span>${statusText}</span>
         </div>
         <label class="skip-checkbox">
-          <input type="checkbox" ${installFlags[key] ? 'checked' : ''} data-comp="${key}" onchange="toggleInstall(this)"/>
-          安装
+          <input type="checkbox" class="switch-checkbox" ${installFlags[key] ? 'checked' : ''} data-comp="${key}" onchange="toggleInstall(this)"/>
+          <span>安装</span>
         </label>
         <span class="detect-action ${actionClass}">${actionText}</span>
       </div>
