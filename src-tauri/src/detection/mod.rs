@@ -12,7 +12,7 @@
 
 mod components;
 mod env;
-mod finder;
+pub(crate) mod finder;
 pub mod verify;
 
 use crate::common::types::ComponentStatus;

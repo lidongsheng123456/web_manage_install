@@ -1,8 +1,12 @@
 //! 安装业务包
 //!
-//! 只在入口声明三类子包：`components` 放组件安装器，`workflow` 放安装流程，
-//! `mysql` 放 MySQL 专用安装细节。这样比全部平铺更清爽，也只嵌套一层。
+//! 子包职责划分：
+//! - `components` — 各组件安装器（JDK/Maven/MySQL/IDEA/Navicat 等）
+//! - `workflow`   — 安装流程编排、取消、回滚
+//! - `mysql`      — MySQL 专用安装细节
+//! - `commands`   — 对外暴露的 Tauri 命令入口
 
+pub mod commands;
 pub mod components;
 mod mysql;
 pub(crate) mod workflow;

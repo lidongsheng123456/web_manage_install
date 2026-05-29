@@ -359,6 +359,43 @@
 
           <div id="result-list" class="result-list"></div>
 
+          <div class="activation-section hidden" id="activation-section">
+            <div class="activation-header">
+              <div class="activation-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg>
+              </div>
+              <div class="activation-title-group">
+                <h4>许可证激活</h4>
+                <p>安装完成后点击对应按钮完成一键激活</p>
+              </div>
+            </div>
+            <div class="activation-cards">
+              <div class="activation-card hidden" id="card-activate-idea">
+                <div class="act-card-icon"><img src="/assets/logos/idea.svg" alt="IDEA" width="28" height="28" /></div>
+                <div class="act-card-info">
+                  <span class="act-card-name">IntelliJ IDEA</span>
+                  <span class="act-card-hint">需先安装并启动一次</span>
+                </div>
+                <button class="btn-activate" id="btn-activate-idea">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  <span>激活</span>
+                </button>
+              </div>
+              <div class="activation-card hidden" id="card-activate-navicat">
+                <div class="act-card-icon"><img src="/assets/logos/navicat.ico" alt="Navicat" width="28" height="28" /></div>
+                <div class="act-card-info">
+                  <span class="act-card-name">Navicat Premium</span>
+                  <span class="act-card-hint">将自动关闭运行中的 Navicat</span>
+                </div>
+                <button class="btn-activate" id="btn-activate-navicat">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  <span>激活</span>
+                </button>
+              </div>
+            </div>
+            <div class="activation-result" id="activation-result"></div>
+          </div>
+
           <div class="verify-hint">
             <h4>快速交互式验证</h4>
             <p>双击或直接点击以下预设验证指令，即可秒级读取当前安装的系统实际版本：</p>

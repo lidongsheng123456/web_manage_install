@@ -6,7 +6,7 @@
 mod find_app_paths;
 mod find_common_dirs;
 mod find_program_files;
-mod find_uninstall;
+pub(crate) mod find_uninstall;
 mod find_where;
 
 pub use find_app_paths::check_app_paths;

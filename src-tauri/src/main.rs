@@ -39,6 +39,8 @@ fn main() {
             version_catalog::command::get_version_catalog,
             cancel_install,
             rollback_install,
+            install::commands::activate_idea,
+            install::commands::activate_navicat,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

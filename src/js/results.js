@@ -15,7 +15,7 @@ import { installFlags } from './detect.js';
  * 渲染安装结果列表
  *
  * 根据 window._installResults 显示成功/失败/跳过状态，
- * 并更新顶部图标和标题。
+ * 并更新顶部图标和标题。同时显示/隐藏激活按钮。
  */
 export function renderResults() {
   const results = window._installResults || [];
@@ -75,6 +75,19 @@ export function renderResults() {
       </div>`;
   }
   list.innerHTML = html;
+
+  /* 根据安装结果显示激活卡片 */
+  const ideaInstalled = results.some(r => r.component === 'idea' && r.success);
+  const navicatInstalled = results.some(r => r.component === 'navicat' && r.success);
+  const section = document.getElementById('activation-section');
+  const cardIdea = document.getElementById('card-activate-idea');
+  const cardNavicat = document.getElementById('card-activate-navicat');
+
+  if (ideaInstalled || navicatInstalled) {
+    section.classList.remove('hidden');
+    if (ideaInstalled) cardIdea.classList.remove('hidden');
+    if (navicatInstalled) cardNavicat.classList.remove('hidden');
+  }
 }
 
 /**
@@ -96,11 +109,44 @@ async function runVerifyCmd(cmd, resultEl) {
 }
 
 /**
+ * 执行激活操作
+ * @param {'idea'|'navicat'} type - 激活目标
+ * @param {HTMLElement} btn - 触发按钮
+ */
+async function runActivation(type, btn) {
+  const resultEl = document.getElementById('activation-result');
+  const cmdName = type === 'idea' ? 'activate_idea' : 'activate_navicat';
+  const label = type === 'idea' ? 'IDEA' : 'Navicat';
+  const card = btn.closest('.activation-card');
+
+  btn.disabled = true;
+  btn.querySelector('span').textContent = '激活中...';
+  resultEl.textContent = '';
+  resultEl.className = 'activation-result';
+
+  try {
+    const msg = await invoke(cmdName);
+    resultEl.textContent = `\u2713 ${msg}`;
+    resultEl.className = 'activation-result success';
+    btn.querySelector('span').textContent = '已激活';
+    btn.classList.add('activated');
+    card.classList.add('activated');
+    card.querySelector('.act-card-hint').textContent = '激活成功，可正常使用';
+  } catch (e) {
+    resultEl.textContent = `${label} 激活失败: ${e}`;
+    resultEl.className = 'activation-result fail';
+    btn.disabled = false;
+    btn.querySelector('span').textContent = '重试';
+  }
+}
+
+/**
  * 初始化 Step 4 的事件监听：
  * - 返回首页按钮
  * - 关闭窗口按钮
  * - 验证命令点击
  * - 一键验证按钮
+ * - 激活按钮
  * @param {Function} resetAndGoHome - 重置 UI 并回到 Step 1 的回调
  */
 export function initResultEvents(resetAndGoHome) {
@@ -129,5 +175,13 @@ export function initResultEvents(resetAndGoHome) {
       const resultEl = el.querySelector('.verify-cmd-result');
       runVerifyCmd(cmd, resultEl);
     });
+  });
+
+  /* 激活按钮 */
+  document.getElementById('btn-activate-idea').addEventListener('click', function () {
+    runActivation('idea', this);
+  });
+  document.getElementById('btn-activate-navicat').addEventListener('click', function () {
+    runActivation('navicat', this);
   });
 }
