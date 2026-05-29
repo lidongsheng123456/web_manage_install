@@ -1,9 +1,10 @@
-//! JDK 17 (OpenJDK) 安装器
+//! JDK (OpenJDK/Temurin) 安装器
 //!
-//! 从国内镜像下载 OpenJDK 17 ZIP 包，解压到安装目录，
+//! 按选择版本从国内镜像下载 JDK ZIP 包，解压到安装目录，
 //! 然后设置 JAVA_HOME 和 PATH 环境变量。
 
 use crate::common::types::DownloadProgress;
+use crate::common::version_policy::jdk as jdk_policy;
 use crate::download;
 use crate::install::utils;
 use crate::install::{emit_done, emit_status};
@@ -28,8 +29,13 @@ pub async fn install(
     let zip_path = download::download_with_version("jdk", version, temp_dir, on_progress).await?;
 
     emit_status(app, "jdk", "install", "正在解压 JDK...");
-    let major = version.split('.').next().unwrap_or("17");
-    let target = utils::extract_and_move(&zip_path, install_root, "jdk", &format!("jdk{major}"))?;
+    let major = jdk_policy::major_from_version(version);
+    let target = utils::extract_and_move(
+        &zip_path,
+        install_root,
+        "jdk",
+        &jdk_policy::install_dir_name(&major),
+    )?;
 
     emit_status(app, "jdk", "config", "正在配置 JAVA_HOME 环境变量...");
     let java_bin = format!("{target}\\bin");

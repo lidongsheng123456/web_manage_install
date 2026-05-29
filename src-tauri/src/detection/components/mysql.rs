@@ -10,6 +10,7 @@
 //! 7. 扫描 Program Files 和常见安装目录
 
 use crate::common::types::ComponentStatus;
+use crate::common::version_policy::mysql as mysql_policy;
 use crate::detection::env::*;
 
 pub fn detect(expected_prefix: &str) -> ComponentStatus {
@@ -108,10 +109,9 @@ fn status(ver: String, expected_prefix: &str, expected_label: &str) -> Component
     }
 }
 
-/// 通过 `sc qc MySQL80` 查询 Windows 服务获取 MySQL 安装路径
+/// 通过 `sc qc` 查询 Windows 服务获取 MySQL 安装路径
 fn detect_via_service() -> Option<String> {
-    let svc_names = ["MySQL80", "MySQL81", "MySQL90", "MySQL", "MySql"];
-    for svc in &svc_names {
+    for svc in mysql_policy::DETECT_SERVICE_NAMES {
         if let Some(exe) = try_service(svc) {
             return Some(exe);
         }

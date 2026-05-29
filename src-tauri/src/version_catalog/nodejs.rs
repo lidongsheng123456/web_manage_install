@@ -4,13 +4,11 @@
 //! 只作为实时请求兜底。只保留有 Windows x64 MSI 的稳定版本。
 
 use crate::common::types::VersionOption;
+use crate::common::version_policy::{defaults, nodejs as node_policy};
 use crate::version_catalog::{
-    compare_semver_desc, dedup_by_value, limit_keep_default, mark_default, option,
+    compare_semver_desc, dedup_by_value, limit_keep_values, mark_default, merge_options, option,
 };
 use serde::Deserialize;
-
-const DEFAULT_NODE: &str = "20.19.0";
-const MAX_NODE_OPTIONS: usize = 18;
 
 #[derive(Debug, Deserialize)]
 struct NodeRelease {
@@ -79,7 +77,7 @@ fn parse_releases(mut releases: Vec<NodeRelease>, source: &str) -> Vec<VersionOp
         } else {
             format!("v{value}")
         };
-        let item = option(&value, label, value == DEFAULT_NODE, is_lts, source);
+        let item = option(&value, label, value == defaults::NODEJS, is_lts, source);
         if is_lts {
             lts_items.push(item);
         } else {
@@ -87,11 +85,35 @@ fn parse_releases(mut releases: Vec<NodeRelease>, source: &str) -> Vec<VersionOp
         }
     }
 
+    let mut lts_items = merge_options(lts_items, classic_lts_options());
+    lts_items = dedup_by_value(lts_items);
+    lts_items.sort_by(|a, b| compare_semver_desc(&a.value, &b.value));
+    current_items = dedup_by_value(current_items);
+
     let mut items = lts_items;
     items.extend(current_items);
     items = dedup_by_value(items);
-    items = limit_keep_default(items, MAX_NODE_OPTIONS, DEFAULT_NODE);
-    mark_default(items, DEFAULT_NODE)
+    items = limit_keep_values(
+        items,
+        node_policy::MAX_OPTIONS,
+        node_policy::REQUIRED_VALUES,
+    );
+    mark_default(items, defaults::NODEJS)
+}
+
+fn classic_lts_options() -> Vec<VersionOption> {
+    node_policy::CLASSIC_LTS
+        .iter()
+        .map(|pin| {
+            option(
+                pin.version,
+                format!("v{} (LTS)", pin.version),
+                pin.version == defaults::NODEJS,
+                true,
+                &format!("Node.js {} LTS", pin.codename),
+            )
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -125,7 +147,7 @@ mod tests {
 
     #[test]
     fn keeps_default_node_when_truncating() {
-        let mut releases = (0..MAX_NODE_OPTIONS + 3)
+        let mut releases = (0..node_policy::MAX_OPTIONS + 3)
             .map(|index| NodeRelease {
                 version: format!("v24.{index}.0"),
                 lts: "Krypton".into(),
@@ -140,9 +162,26 @@ mod tests {
 
         let items = parse_releases(releases, "test");
 
-        assert_eq!(items.len(), MAX_NODE_OPTIONS);
+        assert_eq!(items.len(), node_policy::MAX_OPTIONS);
         assert!(items
             .iter()
             .any(|item| item.value == "20.19.0" && item.default));
+    }
+
+    #[test]
+    fn keeps_classic_lts_majors_when_limiting() {
+        let releases = (0..node_policy::MAX_OPTIONS + 12)
+            .map(|index| NodeRelease {
+                version: format!("v24.{index}.0"),
+                lts: "Krypton".into(),
+                files: vec!["win-x64-msi".into()],
+            })
+            .collect::<Vec<_>>();
+
+        let items = parse_releases(releases, "test");
+
+        for required in node_policy::REQUIRED_VALUES {
+            assert!(items.iter().any(|item| item.value == *required));
+        }
     }
 }

@@ -1,39 +1,27 @@
 //! MySQL 版本 provider。
 //!
-//! 当前安装器的服务名、检测和回滚逻辑都围绕 MySQL 8.0，因此版本目录只从
-//! 可实时访问的镜像目录解析 8.0.x Windows ZIP。
+//! 版本列表从可实时访问的镜像目录解析，并补齐安装器需要保留的经典版本。
+//! 这里仅负责版本发现、去重、排序和默认标记，下载目录/服务名策略统一放在公共策略层。
 
 use crate::common::types::VersionOption;
+use crate::common::version_policy::{defaults, mysql as mysql_policy};
 use crate::version_catalog::{
-    compare_semver_desc, dedup_by_value, limit_keep_default, mark_default, option,
+    compare_semver_desc, dedup_by_value, limit_keep_values, mark_default, merge_options, option,
 };
 use regex_lite::Regex;
-
-const DEFAULT_MYSQL: &str = "8.0.36";
-const MAX_MYSQL_OPTIONS: usize = 14;
-const DEFAULT_MYSQL_ARCHIVE_URL: &str =
-    "https://cdn.mysql.com/archives/mysql-8.0/mysql-8.0.36-winx64.zip";
 
 pub async fn load(client: &reqwest::Client) -> Result<Vec<VersionOption>, String> {
     let mut errors = Vec::new();
     let mut all_items = Vec::new();
-    for (url, source) in [
-        (
-            "https://mirrors.aliyun.com/mysql/MySQL-8.0/",
-            "阿里云 MySQL 镜像",
-        ),
-        (
-            "https://mirrors.huaweicloud.com/mysql/Downloads/MySQL-8.0/",
-            "华为云 MySQL 镜像",
-        ),
-    ] {
-        match fetch_html(client, url, source).await {
+    for (url, source) in catalog_sources() {
+        match fetch_html(client, &url, source).await {
             Ok(items) if !items.is_empty() => all_items.extend(items),
-            Ok(_) => errors.push(format!("{source}: 未解析到 MySQL 8.0 Windows ZIP")),
+            Ok(_) => errors.push(format!("{source}: 未解析到 Windows ZIP 版本")),
             Err(e) => errors.push(format!("{source}: {e}")),
         }
     }
 
+    all_items = merge_options(all_items, required_mysql_options());
     if all_items.is_empty() {
         return Err(format!("实时获取 MySQL 版本失败: {}", errors.join("; ")));
     }
@@ -41,22 +29,31 @@ pub async fn load(client: &reqwest::Client) -> Result<Vec<VersionOption>, String
     all_items = dedup_by_value(all_items);
     all_items.sort_by(|a, b| compare_semver_desc(&a.value, &b.value));
 
-    // 国内目录经常只保留较旧 MySQL 8.0 包；默认版本必须通过真实 URL 校验后才加入列表。
-    if !all_items.iter().any(|item| item.value == DEFAULT_MYSQL)
-        && is_url_reachable(client, DEFAULT_MYSQL_ARCHIVE_URL).await
-    {
-        all_items.push(option(
-            DEFAULT_MYSQL,
-            format!("MySQL {DEFAULT_MYSQL}"),
-            true,
-            false,
-            "MySQL 官方 Archives",
-        ));
-        all_items.sort_by(|a, b| compare_semver_desc(&a.value, &b.value));
-    }
+    let items = limit_keep_values(
+        all_items,
+        mysql_policy::MAX_OPTIONS,
+        mysql_policy::REQUIRED_VALUES,
+    );
+    Ok(mark_default(items, defaults::MYSQL))
+}
 
-    let items = limit_keep_default(all_items, MAX_MYSQL_OPTIONS, DEFAULT_MYSQL);
-    Ok(mark_default(items, DEFAULT_MYSQL))
+fn catalog_sources() -> Vec<(String, &'static str)> {
+    mysql_policy::SUPPORTED_SERIES
+        .iter()
+        .flat_map(|&series| {
+            let dir = mysql_policy::directory_name(series);
+            [
+                (
+                    format!("https://mirrors.aliyun.com/mysql/{dir}/"),
+                    "阿里云 MySQL 镜像",
+                ),
+                (
+                    format!("https://mirrors.huaweicloud.com/mysql/Downloads/{dir}/"),
+                    "华为云 MySQL 镜像",
+                ),
+            ]
+        })
+        .collect()
 }
 
 async fn fetch_html(
@@ -76,7 +73,7 @@ async fn fetch_html(
 }
 
 fn parse_html(text: &str, source: &str) -> Vec<VersionOption> {
-    let re = Regex::new(r"mysql-(8\.0\.\d+)-winx64\.zip").expect("valid mysql regex");
+    let re = Regex::new(&mysql_policy::catalog_regex_pattern()).expect("valid mysql regex");
     let mut versions = re
         .captures_iter(text)
         .filter_map(|cap| cap.get(1).map(|m| m.as_str().to_string()))
@@ -87,29 +84,25 @@ fn parse_html(text: &str, source: &str) -> Vec<VersionOption> {
 
     versions
         .into_iter()
-        .map(|value| {
-            option(
-                &value,
-                format!("MySQL {value}"),
-                value == DEFAULT_MYSQL,
-                false,
-                source,
-            )
-        })
+        .map(|value| mysql_option(&value, source))
         .collect::<Vec<_>>()
 }
 
-async fn is_url_reachable(client: &reqwest::Client, url: &str) -> bool {
-    match client.head(url).send().await {
-        Ok(resp) if resp.status().is_success() => true,
-        _ => client
-            .get(url)
-            .header(reqwest::header::RANGE, "bytes=0-0")
-            .send()
-            .await
-            .map(|resp| resp.status().is_success())
-            .unwrap_or(false),
-    }
+fn required_mysql_options() -> Vec<VersionOption> {
+    mysql_policy::REQUIRED_VALUES
+        .iter()
+        .map(|value| mysql_option(value, "MySQL 官方 Archives"))
+        .collect()
+}
+
+fn mysql_option(value: &str, source: &str) -> VersionOption {
+    option(
+        value,
+        format!("MySQL {value}"),
+        value == defaults::MYSQL,
+        false,
+        source,
+    )
 }
 
 #[cfg(test)]
@@ -117,43 +110,47 @@ mod tests {
     use super::*;
 
     #[test]
-    fn keeps_only_mysql_80_winx64_zip() {
+    fn keeps_mysql_80_and_57_winx64_zip() {
         let html = r#"
           mysql-8.0.36-winx64.zip
           mysql-8.0.37-winx64.zip
           mysql-8.4.0-winx64.zip
+          mysql-5.7.38-winx64.zip
+          mysql-5.6.51-winx64.zip
           mysql-8.0.37-winx64-debug-test.zip
         "#;
         let items = parse_html(html, "test");
-        assert_eq!(items[0].value, "8.0.37");
+        assert!(items.iter().any(|item| item.value == "8.0.37"));
         assert!(items.iter().any(|item| item.value == "8.0.36"));
+        assert!(items.iter().any(|item| item.value == "5.7.38"));
         assert!(!items.iter().any(|item| item.value.starts_with("8.4")));
+        assert!(!items.iter().any(|item| item.value.starts_with("5.6")));
     }
 
     #[test]
-    fn marks_default_mysql_after_limiting() {
+    fn marks_default_and_keeps_mysql_5_when_limiting() {
         let items = (20..45)
             .map(|patch| {
                 let value = format!("8.0.{patch}");
-                option(&value, format!("MySQL {value}"), false, false, "test")
+                mysql_option(&value, "test")
             })
-            .chain(std::iter::once(option(
-                DEFAULT_MYSQL,
-                format!("MySQL {DEFAULT_MYSQL}"),
-                false,
-                false,
-                "test",
-            )))
+            .chain(required_mysql_options())
             .collect::<Vec<_>>();
 
         let items = mark_default(
-            limit_keep_default(items, MAX_MYSQL_OPTIONS, DEFAULT_MYSQL),
-            DEFAULT_MYSQL,
+            limit_keep_values(
+                items,
+                mysql_policy::MAX_OPTIONS,
+                mysql_policy::REQUIRED_VALUES,
+            ),
+            defaults::MYSQL,
         );
 
-        assert_eq!(items.len(), MAX_MYSQL_OPTIONS);
+        assert_eq!(items.len(), mysql_policy::MAX_OPTIONS);
         assert!(items
             .iter()
-            .any(|item| item.value == DEFAULT_MYSQL && item.default));
+            .any(|item| item.value == defaults::MYSQL && item.default));
+        assert!(items.iter().any(|item| item.value == "5.7.44"));
+        assert!(items.iter().any(|item| item.value == "5.7.38"));
     }
 }

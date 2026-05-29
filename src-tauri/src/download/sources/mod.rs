@@ -4,6 +4,7 @@
 //! 维护默认版本，并用测试约束“中国源优先，官方源兜底”的排序规则。
 
 use crate::common::types::MirrorSource;
+use crate::common::version_policy::defaults;
 
 mod idea;
 mod jdk;
@@ -34,16 +35,7 @@ pub fn get_mirrors(component: &str) -> MirrorSource {
 }
 
 fn default_version(component: &str) -> &str {
-    match component {
-        "nodejs" => "20.19.0",
-        "jdk" => "17",
-        "maven" => "3.9.6",
-        "mysql" => "8.0.36",
-        "idea" => "2023.3.8",
-        "navicat" => "17",
-        "redis" => "5.0.14.1",
-        _ => "",
-    }
+    defaults::component(component)
 }
 
 #[cfg(test)]
@@ -75,6 +67,24 @@ mod tests {
         let source = get_mirrors_versioned("jdk", "21");
         assert!(source.urls[0].contains("repo.huaweicloud.com/openjdk/21.0.2"));
         assert_eq!(source.filename, "openjdk-21_windows-x64_bin.zip");
+    }
+
+    #[test]
+    fn jdk8_download_sources_use_adoptium_zip() {
+        let source = get_mirrors_versioned("jdk", "8");
+        assert!(source.urls[0].contains("mirrors.tuna.tsinghua.edu.cn/Adoptium/8"));
+        assert_eq!(
+            source.filename,
+            "OpenJDK8U-jdk_x64_windows_hotspot_8u492b09.zip"
+        );
+    }
+
+    #[test]
+    fn mysql57_download_sources_use_57_directories() {
+        let source = get_mirrors_versioned("mysql", "5.7.44");
+        assert!(source.urls[0].contains("MySQL-5.7"));
+        assert!(source.urls.iter().any(|url| url.contains("mysql-5.7")));
+        assert_eq!(source.filename, "mysql-5.7.44-winx64.zip");
     }
 
     #[test]

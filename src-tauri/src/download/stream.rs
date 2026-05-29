@@ -96,7 +96,7 @@ fn validate_file_signature(url: &str, chunk: &[u8]) -> Result<(), String> {
     if lower.contains(".exe") && !chunk.starts_with(b"MZ") {
         return Err("返回内容不是有效的 Windows EXE 文件".into());
     }
-    if lower.contains(".zip") && !chunk.starts_with(b"PK") {
+    if lower.contains(".zip") && !lower.contains("api.adoptium.net/") && !chunk.starts_with(b"PK") {
         return Err("返回内容不是有效的 ZIP 文件".into());
     }
     Ok(())

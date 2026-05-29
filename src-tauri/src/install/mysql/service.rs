@@ -1,16 +1,23 @@
 use crate::common::process::hide_window;
+use crate::common::version_policy::mysql as mysql_policy;
 use crate::install::emit_status;
 use crate::install::mysql::command::cmd_with_utf8;
 use std::path::Path;
 use std::process::Command;
 use tauri::AppHandle;
 
+pub fn service_name_for_version(version: &str) -> &'static str {
+    mysql_policy::service_name_for_version(version)
+}
+
 /// 停止并删除旧的 MySQL Windows 服务。
 pub fn cleanup_old_service(app: &AppHandle) {
     emit_status(app, "mysql", "config", "正在清理旧 MySQL 服务...");
-    let _ = hide_window(Command::new("sc").args(["stop", "MySQL80"])).output();
-    std::thread::sleep(std::time::Duration::from_secs(2));
-    let _ = hide_window(Command::new("sc").args(["delete", "MySQL80"])).output();
+    for &service_name in mysql_policy::MANAGED_SERVICE_NAMES {
+        let _ = hide_window(Command::new("sc").args(["stop", service_name])).output();
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        let _ = hide_window(Command::new("sc").args(["delete", service_name])).output();
+    }
     std::thread::sleep(std::time::Duration::from_secs(1));
 }
 
@@ -49,12 +56,16 @@ pub fn initialize_data_dir(app: &AppHandle, mysql_home: &str) -> Result<(), Stri
     Ok(())
 }
 
-/// 将 mysqld 注册为 Windows 服务 MySQL80。
-pub fn register_service(app: &AppHandle, mysql_home: &str) -> Result<(), String> {
+/// 将 mysqld 注册为对应版本的 Windows 服务。
+pub fn register_service(
+    app: &AppHandle,
+    mysql_home: &str,
+    service_name: &str,
+) -> Result<(), String> {
     emit_status(app, "mysql", "config", "正在注册 MySQL 系统服务...");
 
     let mysqld = format!("{mysql_home}\\bin\\mysqld.exe");
-    let output = hide_window(Command::new(&mysqld).args(["--install", "MySQL80"]))
+    let output = hide_window(Command::new(&mysqld).args(["--install", service_name]))
         .output()
         .map_err(|e| format!("注册服务失败: {e}"))?;
 
@@ -67,12 +78,12 @@ pub fn register_service(app: &AppHandle, mysql_home: &str) -> Result<(), String>
     Ok(())
 }
 
-/// 启动 MySQL80 服务，最多重试 3 次。
-pub fn start_service(app: &AppHandle) -> Result<(), String> {
+/// 启动对应版本的 MySQL 服务，最多重试 3 次。
+pub fn start_service(app: &AppHandle, service_name: &str) -> Result<(), String> {
     emit_status(app, "mysql", "config", "正在启动 MySQL 服务...");
 
     for attempt in 1..=3 {
-        if let Ok(o) = hide_window(Command::new("net").args(["start", "MySQL80"])).output() {
+        if let Ok(o) = hide_window(Command::new("net").args(["start", service_name])).output() {
             if o.status.success() {
                 std::thread::sleep(std::time::Duration::from_secs(2));
                 return Ok(());

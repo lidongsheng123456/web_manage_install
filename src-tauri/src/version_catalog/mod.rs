@@ -68,6 +68,18 @@ pub(crate) fn mark_default(
     items
 }
 
+pub(crate) fn merge_options(
+    mut items: Vec<VersionOption>,
+    pinned: Vec<VersionOption>,
+) -> Vec<VersionOption> {
+    for item in pinned {
+        if !items.iter().any(|existing| existing.value == item.value) {
+            items.push(item);
+        }
+    }
+    items
+}
+
 pub(crate) fn limit_keep_default(
     mut items: Vec<VersionOption>,
     max_len: usize,
@@ -89,6 +101,42 @@ pub(crate) fn limit_keep_default(
             items.pop();
             items.push(default_item);
         }
+    }
+
+    items
+}
+
+pub(crate) fn limit_keep_values(
+    mut items: Vec<VersionOption>,
+    max_len: usize,
+    required_values: &[&str],
+) -> Vec<VersionOption> {
+    if max_len == 0 || items.len() <= max_len {
+        return items;
+    }
+
+    let required_items = required_values
+        .iter()
+        .filter_map(|value| items.iter().find(|item| item.value == *value).cloned())
+        .collect::<Vec<_>>();
+
+    items.truncate(max_len);
+
+    for item in required_items {
+        if items.iter().any(|existing| existing.value == item.value) {
+            continue;
+        }
+        if items.len() >= max_len {
+            if let Some(index) = (0..items.len())
+                .rev()
+                .find(|index| !required_values.contains(&items[*index].value.as_str()))
+            {
+                items.remove(index);
+            } else {
+                items.pop();
+            }
+        }
+        items.push(item);
     }
 
     items

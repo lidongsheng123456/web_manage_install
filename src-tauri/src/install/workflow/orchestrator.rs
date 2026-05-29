@@ -1,4 +1,5 @@
 use crate::common::types::{CancelToken, DownloadProgress, InstallConfig, InstallResult};
+use crate::common::version_policy::defaults;
 use crate::install::components::{bundled, jdk, maven, mysql, node};
 use crate::install::workflow::cancel::check_cancel;
 use crate::install::workflow::dry_run::dry_run_download;
@@ -105,7 +106,7 @@ pub async fn install_all(
         config.install_idea,
         "idea",
         if dry {
-            dry_run_download(&app, "idea", "2023.3.8", &temp, &on_progress).await
+            dry_run_download(&app, "idea", defaults::IDEA, &temp, &on_progress).await
         } else {
             bundled::download_idea(&app, &root, &temp, &on_progress).await
         }
@@ -115,7 +116,7 @@ pub async fn install_all(
         config.install_navicat,
         "navicat",
         if dry {
-            dry_run_download(&app, "navicat", "17", &temp, &on_progress).await
+            dry_run_download(&app, "navicat", defaults::NAVICAT, &temp, &on_progress).await
         } else {
             bundled::download_navicat(&app, &root, &temp, &on_progress).await
         }
@@ -125,7 +126,7 @@ pub async fn install_all(
         config.install_redis,
         "redis",
         if dry {
-            dry_run_download(&app, "redis", "5.0.14.1", &temp, &on_progress).await
+            dry_run_download(&app, "redis", defaults::REDIS, &temp, &on_progress).await
         } else {
             bundled::download_redis(&app, &root, &temp, &on_progress).await
         }

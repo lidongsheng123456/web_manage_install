@@ -5,6 +5,7 @@
 //! 激活工具（idea-activation.7z / navicat-activation.7z）如果存在则一并复制。
 
 use crate::common::types::DownloadProgress;
+use crate::common::version_policy::defaults;
 use crate::download;
 use crate::install::{emit_done, emit_status};
 use std::path::Path;
@@ -22,9 +23,10 @@ pub async fn download_idea(
         app,
         "idea",
         "download",
-        "正在下载 IntelliJ IDEA 2023.3.8...",
+        &format!("正在下载 IntelliJ IDEA {}...", defaults::IDEA),
     );
-    let src = download::download_with_version("idea", "2023.3.8", temp_dir, on_progress).await?;
+    let src =
+        download::download_with_version("idea", defaults::IDEA, temp_dir, on_progress).await?;
 
     std::fs::create_dir_all(install_root).ok();
     let filename = Path::new(&src)
@@ -51,8 +53,14 @@ pub async fn download_navicat(
     temp_dir: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
-    emit_status(app, "navicat", "download", "正在下载 Navicat Premium 17...");
-    let src = download::download_with_version("navicat", "17", temp_dir, on_progress).await?;
+    emit_status(
+        app,
+        "navicat",
+        "download",
+        &format!("正在下载 Navicat Premium {}...", defaults::NAVICAT),
+    );
+    let src = download::download_with_version("navicat", defaults::NAVICAT, temp_dir, on_progress)
+        .await?;
 
     std::fs::create_dir_all(install_root).ok();
     let filename = Path::new(&src)
@@ -79,9 +87,14 @@ pub async fn download_redis(
     temp_dir: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
-    emit_status(app, "redis", "download", "正在下载 Redis 5.0.14.1...");
+    emit_status(
+        app,
+        "redis",
+        "download",
+        &format!("正在下载 Redis {}...", defaults::REDIS),
+    );
     let zip_path =
-        download::download_with_version("redis", "5.0.14.1", temp_dir, on_progress).await?;
+        download::download_with_version("redis", defaults::REDIS, temp_dir, on_progress).await?;
 
     emit_status(app, "redis", "install", "正在解压 Redis...");
     let target =

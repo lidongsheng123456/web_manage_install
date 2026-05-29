@@ -1,3 +1,4 @@
+use crate::common::version_policy::defaults;
 use serde::{Deserialize, Serialize};
 
 /// 安装过程中的状态事件，通过 Tauri Event 推送到前端。
@@ -59,16 +60,16 @@ pub struct InstallConfig {
 }
 
 fn default_node_ver() -> String {
-    "20.19.0".into()
+    defaults::NODEJS.into()
 }
 fn default_jdk_ver() -> String {
-    "17".into()
+    defaults::JDK.into()
 }
 fn default_maven_ver() -> String {
-    "3.9.6".into()
+    defaults::MAVEN.into()
 }
 fn default_mysql_ver() -> String {
-    "8.0.36".into()
+    defaults::MYSQL.into()
 }
 
 /// 单个组件的安装结果。

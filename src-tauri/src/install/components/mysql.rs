@@ -11,7 +11,8 @@ use crate::install::mysql::password::set_root_password;
 use crate::install::mysql::path::{select_port, validate_install_path};
 use crate::install::mysql::runtime::check_vcruntime;
 use crate::install::mysql::service::{
-    cleanup_old_service, initialize_data_dir, register_service, start_service,
+    cleanup_old_service, initialize_data_dir, register_service, service_name_for_version,
+    start_service,
 };
 use crate::install::utils;
 use crate::install::{emit_done, emit_status};
@@ -48,12 +49,13 @@ pub async fn install(
     let port = select_port();
     write_my_ini(&target, port)?;
 
+    let service_name = service_name_for_version(version);
     check_vcruntime(app);
     cleanup_old_service(app);
     initialize_data_dir(app, &target)?;
-    register_service(app, &target)?;
-    start_service(app)?;
-    set_root_password(app, &target, mysql_password);
+    register_service(app, &target, service_name)?;
+    start_service(app, service_name)?;
+    set_root_password(app, &target, mysql_password, service_name);
     configure_env_vars(&target)?;
 
     emit_done(

@@ -1,9 +1,13 @@
 use crate::common::types::MirrorSource;
+use crate::common::version_policy::jdk as jdk_policy;
 
-/// OpenJDK ZIP：华为云镜像优先，官方 java.net 和 Adoptium 兜底。
 pub fn mirrors(version: &str) -> MirrorSource {
-    let major = version.split('.').next().unwrap_or("17");
-    let feature = feature_version(major);
+    let major = jdk_policy::major_from_version(version);
+    if major == "8" {
+        return jdk8_mirrors();
+    }
+
+    let feature = jdk_policy::feature_version(&major);
 
     MirrorSource {
         urls: vec![
@@ -15,27 +19,13 @@ pub fn mirrors(version: &str) -> MirrorSource {
     }
 }
 
-fn feature_version(major: &str) -> String {
-    match major {
-        "9" => "9.0.4",
-        "10" => "10.0.2",
-        "11" => "11.0.2",
-        "12" => "12.0.2",
-        "13" => "13.0.2",
-        "14" => "14.0.2",
-        "15" => "15.0.2",
-        "16" => "16.0.2",
-        "17" => "17.0.2",
-        "18" => "18.0.2",
-        "19" => "19.0.2",
-        "20" => "20.0.2",
-        "21" => "21.0.2",
-        "22" => "22.0.2",
-        "23" => "23.0.2",
-        "24" => "24.0.2",
-        "25" => "25.0.2",
-        "26" => "26.0.1",
-        _ => "17.0.2",
+fn jdk8_mirrors() -> MirrorSource {
+    MirrorSource {
+        urls: vec![
+            jdk_policy::ADOPTIUM_8_TUNA_URL.into(),
+            jdk_policy::ADOPTIUM_8_API_URL.into(),
+            jdk_policy::ADOPTIUM_8_GITHUB_URL.into(),
+        ],
+        filename: jdk_policy::ADOPTIUM_8_FILENAME.into(),
     }
-    .to_string()
 }

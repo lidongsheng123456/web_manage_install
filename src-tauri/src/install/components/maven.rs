@@ -1,4 +1,4 @@
-//! Maven 3.9.6 安装器
+//! Maven 安装器
 //!
 //! 下载 Maven ZIP 包，解压后自动写入 `settings.xml`，
 //! 配置阿里云公共仓库镜像和 localRepository 路径，

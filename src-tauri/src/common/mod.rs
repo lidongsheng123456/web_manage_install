@@ -7,3 +7,4 @@ pub mod install;
 pub mod process;
 pub mod types;
 pub mod version;
+pub mod version_policy;

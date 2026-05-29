@@ -9,12 +9,7 @@ use crate::common::process::hide_window;
 use std::process::Command;
 
 /// 允许前端执行的验证命令白名单
-const ALLOWED_COMMANDS: &[&str] = &[
-    "node -v",
-    "java -version",
-    "mvn -v",
-    "mysql -V",
-];
+const ALLOWED_COMMANDS: &[&str] = &["node -v", "java -version", "mvn -v", "mysql -V"];
 
 /// 运行一条验证命令并返回输出文本，带自动重试。
 ///
@@ -35,9 +30,7 @@ pub async fn run_verify(cmd: String) -> Result<String, String> {
         let fresh_envs = read_fresh_env_vars();
 
         let mut cmd_builder = Command::new("cmd");
-        cmd_builder
-            .args(["/C", &cmd])
-            .env("PATH", &fresh_path);
+        cmd_builder.args(["/C", &cmd]).env("PATH", &fresh_path);
         hide_window(&mut cmd_builder);
         for (k, v) in &fresh_envs {
             cmd_builder.env(k, v);

@@ -3,10 +3,10 @@
 //! 实时读取 Maven 元数据并过滤 alpha/beta/rc 等预发布版本，只展示 3.x 稳定版。
 
 use crate::common::types::VersionOption;
+use crate::common::version_policy::defaults;
 use crate::version_catalog::{compare_semver_desc, limit_keep_default, mark_default, option};
 use regex_lite::Regex;
 
-const DEFAULT_MAVEN: &str = "3.9.6";
 const MAVEN_METADATA_URL: &str =
     "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/maven-metadata.xml";
 
@@ -43,15 +43,15 @@ fn parse_metadata(text: &str) -> Vec<VersionOption> {
             option(
                 &value,
                 format!("Maven {value}"),
-                value == DEFAULT_MAVEN,
+                value == defaults::MAVEN,
                 false,
                 "Apache Maven metadata",
             )
         })
         .collect::<Vec<_>>();
 
-    let items = limit_keep_default(items, 16, DEFAULT_MAVEN);
-    mark_default(items, DEFAULT_MAVEN)
+    let items = limit_keep_default(items, 16, defaults::MAVEN);
+    mark_default(items, defaults::MAVEN)
 }
 
 fn is_stable_maven3(version: &str) -> bool {

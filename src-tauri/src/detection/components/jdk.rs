@@ -10,6 +10,7 @@
 //! 7. 扫描常见安装目录
 
 use crate::common::types::ComponentStatus;
+use crate::common::version_policy::jdk as jdk_policy;
 use crate::detection::env::*;
 
 pub fn detect(expected_major: &str) -> ComponentStatus {
@@ -88,7 +89,7 @@ fn parse_java_output(output: Option<String>) -> Option<String> {
 }
 
 fn status(ver: String, expected_major: &str, expected_label: &str) -> ComponentStatus {
-    let major = ver.split('.').next().unwrap_or("");
+    let major = jdk_policy::major_from_version(&ver);
     ComponentStatus {
         name: "JDK".into(),
         installed: true,

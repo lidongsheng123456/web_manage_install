@@ -1,4 +1,5 @@
 use crate::common::process::hide_window;
+use crate::common::version_policy::{jdk as jdk_policy, mysql as mysql_policy};
 use crate::install::{emit_done, emit_status};
 use crate::system::env_config;
 use std::process::Command;
@@ -41,8 +42,11 @@ fn rollback_node(install_root: &str, rolled_back: &mut Vec<String>) {
 }
 
 fn rollback_jdk(install_root: &str, rolled_back: &mut Vec<String>) {
-    for major in ["17", "21"] {
-        let dir = format!("{install_root}\\jdk{major}");
+    for major in jdk_policy::supported_majors() {
+        let dir = format!(
+            "{install_root}\\{}",
+            jdk_policy::install_dir_name(&major.to_string())
+        );
         if std::path::Path::new(&dir).exists() {
             env_config::remove_from_path(&format!("{dir}\\bin"));
             remove_dir_safe(&dir);
@@ -61,9 +65,11 @@ fn rollback_maven(install_root: &str, rolled_back: &mut Vec<String>) {
 }
 
 fn rollback_mysql(install_root: &str, rolled_back: &mut Vec<String>) {
-    let _ = hide_window(Command::new("net").args(["stop", "MySQL80"])).output();
-    std::thread::sleep(std::time::Duration::from_secs(2));
-    let _ = hide_window(Command::new("sc").args(["delete", "MySQL80"])).output();
+    for &service_name in mysql_policy::MANAGED_SERVICE_NAMES {
+        let _ = hide_window(Command::new("net").args(["stop", service_name])).output();
+        std::thread::sleep(std::time::Duration::from_secs(1));
+        let _ = hide_window(Command::new("sc").args(["delete", service_name])).output();
+    }
 
     let dir = format!("{install_root}\\mysql");
     env_config::remove_from_path(&format!("{dir}\\bin"));
