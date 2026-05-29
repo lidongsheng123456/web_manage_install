@@ -9,22 +9,7 @@ mod version_catalog;
 
 use common::types::CancelToken;
 
-/// 前端调用此命令取消正在进行的安装。
-#[tauri::command]
-fn cancel_install(state: tauri::State<CancelToken>) {
-    state.cancel();
-}
-
-/// 前端调用此命令回滚已安装的组件。
-#[tauri::command]
-async fn rollback_install(
-    app: tauri::AppHandle,
-    components: Vec<String>,
-    install_root: String,
-) -> Result<Vec<String>, String> {
-    install::rollback(&app, &components, &install_root)
-}
-
+// Tauri 主入口，负责设置全局状态和注册命令。
 fn main() {
     download::configure_proxy_bypass();
 
@@ -37,10 +22,10 @@ fn main() {
             install::workflow::orchestrator::install_all,
             download::preflight::preflight_check,
             version_catalog::command::get_version_catalog,
-            cancel_install,
-            rollback_install,
-            install::commands::activate_idea,
-            install::commands::activate_navicat,
+            install::workflow::commands::cancel_install,
+            install::workflow::commands::rollback_install,
+            install::components::commands::activate_idea,
+            install::components::commands::activate_navicat,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

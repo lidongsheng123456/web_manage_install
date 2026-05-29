@@ -1,6 +1,7 @@
 //! 组件安装器集合。
 
 pub mod bundled;
+pub(crate) mod commands;
 pub mod idea;
 pub mod jdk;
 pub mod maven;

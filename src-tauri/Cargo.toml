@@ -1,9 +1,10 @@
 [package]
 name = "dev-env-installer"
-version = "1.4.0"
+version = "1.4.1"
 description = "开发环境可视化安装器"
 authors = ["you"]
 edition = "2021"
+build = "src/build.rs"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
