@@ -1,0 +1,361 @@
+﻿/* ── 区块大标题与修饰 ───────────────────────────────────────────── */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.section-title svg {
+  filter: drop-shadow(0 1px 2px rgba(37, 99, 235, 0.15));
+}
+
+.section-title h2 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+/* ── 自定义按钮组件样式 ──────────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+  transition: all var(--transition);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+  filter: brightness(1.04);
+}
+
+.btn-primary:active:not(:disabled) { 
+  transform: translateY(1px); 
+}
+
+.btn-primary:disabled { 
+  opacity: 0.45; 
+  cursor: not-allowed; 
+  box-shadow: none;
+  background: var(--text-muted);
+  border-color: transparent;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition);
+}
+
+.btn-secondary:hover:not(:disabled) { 
+  background: #fafafa; 
+  border-color: var(--border-hover); 
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-small { 
+  padding: 6px 12px; 
+  font-size: 11px; 
+}
+
+.btn-outline-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-outline-warning:hover { 
+  background: rgba(217, 119, 6, 0.08); 
+  border-color: var(--warning);
+}
+
+.btn-danger {
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #fff;
+  box-shadow: 0 3px 6px rgba(220, 38, 38, 0.12);
+  transition: all var(--transition);
+}
+
+.btn-danger:hover:not(:disabled) { 
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.18);
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── 表单排版与极其精致的 Fluent 美化（输入框、下拉选择、复选框） ─── */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+/* 统一定制基础输入框样式 */
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  transition: all var(--transition);
+  background: #f8fafc;
+  color: var(--text);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.01);
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px var(--primary-glow),
+              0 2px 6px rgba(37, 99, 235, 0.02);
+}
+
+/* ── 👑 极致精致：100% 自定义 Fluent 扁平拟物下拉选择框 (Select) ── */
+.form-group select,
+.version-item select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  transition: all var(--transition);
+  color: var(--text);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.01);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* 注入精美、极细的 Fluent 风格 Chevron 下拉小箭头 SVG 编码 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px;
+  background-color: #f8fafc;
+  padding: 8px 28px 8px 10px !important; /* 右侧预留箭头的安全宽度 */
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  border-color: var(--primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* 小号版本选择下拉框 */
+.version-item select {
+  background-color: #ffffff;
+  background-position: right 6px center;
+  background-size: 9px;
+  padding: 4px 18px 4px 6px !important;
+  border-radius: 4px;
+}
+
+.version-item select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+/* ── 👑 极致精致：100% 自定义 Fluent 动效复选框 (Checkbox) ── */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px; /* 锁死黄金 16px 尺寸，更加饱满 */
+  height: 16px;
+  border: 2px solid #cbd5e1; /* 使用比原先更清晰立体的中性灰边，杜绝视觉发虚 */
+  border-radius: 5px; /* 精美、微拟物的圆润微圆角 */
+  background: #ffffff;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 悬停状态下边框提亮 */
+input[type="checkbox"]:hover:not(:disabled) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* 选中激活状态：填充品牌色、应用柔和立体阴影 */
+input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+}
+
+/* 👑 使用极高精度的 100% 完美矢量对勾（SVG路径，无锯齿、不偏心、极其柔滑圆润） */
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px;
+}
+
+/* 警告框类型的 checkbox 特殊处理（例如 模拟测试模式 复选框） */
+.dry-run-checkbox input[type="checkbox"]:checked {
+  background: var(--warning);
+  border-color: var(--warning);
+  box-shadow: 0 2px 5px rgba(217, 119, 6, 0.2);
+}
+.dry-run-checkbox input[type="checkbox"]:checked {
+  background: var(--warning);
+  border-color: var(--warning);
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.15);
+}
+
+/* 禁用状态下的复选框外观 */
+input[type="checkbox"]:disabled {
+  background: #f1f5f9;
+  border-color: var(--border);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+input[type="checkbox"]:disabled::after {
+  border-color: var(--text-muted);
+}
+
+/* ── 👑 极致精致：100% 自定义高阶物理反馈滑动开关 (Toggle Switch) ── */
+/* 通过该类名，可以将复选框平滑升华为高雅的微软 Fluent 滑动胶囊开关 */
+input[type="checkbox"].switch-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 32px; /* 锁死标准滑动槽大小 */
+  height: 18px;
+  margin: 0 !important; /* 彻底杜绝任何浏览器默认 margin 带来的几像素偏航，确保完美轴对齐 */
+  background-color: #cbd5e1; /* 默认未激活：中性钛灰 */
+  border-radius: 9px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background-color var(--transition), box-shadow var(--transition);
+  flex-shrink: 0;
+  border: none !important; /* 无常规 checkbox 边框 */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 滑动开关悬停发光 */
+input[type="checkbox"].switch-checkbox:hover:not(:disabled) {
+  background-color: #94a3b8;
+}
+
+/* 滑动开关小滑块 */
+input[type="checkbox"].switch-checkbox::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  top: 2px;
+  left: 2px;
+  /* 运用贝塞尔曲线定义圆球滚动的Q弹阻尼物理效果 */
+  transition: transform var(--transition) cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 选中激活状态：背景变蓝 */
+input[type="checkbox"].switch-checkbox:checked {
+  background-color: var(--primary) !important;
+}
+
+/* 选中激活状态：滑块圆按钮弹性向右滚过 14px 槽位 */
+input[type="checkbox"].switch-checkbox:checked::after {
+  transform: translateX(14px);
+}
+
+/* 针对禁用状态滑动开关的外观保护 */
+input[type="checkbox"].switch-checkbox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 警告性开关：在 dry-run 模拟部署勾选下，启用警告橘黄色滑动槽 */
+.dry-run-checkbox input[type="checkbox"].switch-checkbox:checked {
+  background-color: var(--warning) !important;
+}
+
+.input-row { 
+  display: flex; 
+  gap: 8px; 
+  align-items: center; /* 强力约束：输入框和按钮在垂直高度上中轴线绝对齐平对齐 */
+}
+.input-row input { 
+  flex: 1; 
+  height: 32px; /* 统一锁定为 32px 物理高度，确保绝无上下高矮落差 */
+}
+.input-row button {
+  height: 32px; /* 统一锁定为 32px 物理高度，确保和输入框绝对齐平 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-hint {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+

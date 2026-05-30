@@ -1,0 +1,189 @@
+﻿/* ── 本地调试测试横幅 ─────────────────────────────────────────── */
+.test-banner {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--warning);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.test-banner svg { flex-shrink: 0; filter: drop-shadow(0 1px 1px rgba(217, 119, 6, 0.1)); }
+
+/* ── 滚动条全局定制 ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.18); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.28); }
+
+/* ── 全局焦点键盘轮廓 ──────────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
+
+/* ── 雷达旋转关键帧 ───────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes shimmer-bar {
+  0% { background-position: 200% 0; }
+  100% { background-position: 0 0; }
+}
+
+/* ── 📱 极致响应式媒体查询：自适应全断点自愈排版 ────────── */
+@media (max-width: 820px) {
+  body {
+    padding: 6px;
+  }
+  
+  .app {
+    flex-direction: column; /* 屏幕收窄时，侧边栏往上走，主内容区居下 */
+  }
+  
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 16px;
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  }
+  
+  .sidebar-brand {
+    margin-bottom: 0;
+  }
+  
+  .sidebar-brand .brand-subtitle {
+    display: none; /* 隐藏品牌小字，节约横向宽度 */
+  }
+  
+  .app-sidebar .stepper {
+    flex-direction: row; /* 步进指示器顺滑转换为顶部横向导航 */
+    align-items: center;
+    margin-top: 0;
+    margin-left: auto;
+    width: auto;
+    flex: none;
+  }
+  
+  .app-sidebar .step {
+    padding: 4px 8px;
+    width: auto;
+    gap: 6px;
+  }
+  
+  .app-sidebar .step-label {
+    display: none; /* 顶部导航精简化，仅显示数字标 */
+  }
+  
+  .app-sidebar .step-line {
+    width: 12px; /* 间隙连接线转为横向 */
+    height: 2px;
+    background: rgba(148, 163, 184, 0.1);
+    margin: 0 4px;
+  }
+  
+  .sidebar-footer {
+    display: none; /* 窄屏隐藏页脚 */
+  }
+  
+  .page-content {
+    padding: 16px 20px;
+  }
+  
+  .page-actions {
+    padding: 10px 20px;
+  }
+  
+  /* 步骤 1 双卡片自动折叠为纵向 */
+  .config-grid {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .config-card {
+    flex: none;
+    height: auto;
+    min-height: auto;
+    overflow-y: visible;
+  }
+  
+  /* 步骤 2 网格合并为单列 */
+  .detect-results {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  
+  /* 步骤 3 部署页并排重组为上下平铺 */
+  .flex-content-row {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .install-left {
+    width: 100%;
+    flex: none;
+    overflow-y: visible;
+  }
+  
+  .install-right {
+    width: 100%;
+    flex: none;
+    min-height: 200px; /* 保证底部的日志监控终端至少拥有舒适可视高度 */
+  }
+  
+  .install-right .log-content {
+    min-height: 160px;
+  }
+}
+
+/* ================================================================
+   登录认证页 — 梦幻云端沉浸式 Glassmorphism 浅色主题
+   ================================================================ */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 纯净、克制的云端单色背景，极具空间感 */
+  background-color: #f0f9ff;
+  padding: 24px;
+  overflow: hidden; /* 裁剪漂出屏幕的云朵，防止出现滚动条 */
+  
+  /* 精致平滑过渡：供淡出动画使用 */
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  transition: 
+    opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+    transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+    filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.auth-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.05);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.auth-overlay.hidden {
+  display: none;
+}
+

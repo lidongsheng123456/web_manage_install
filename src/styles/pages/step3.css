@@ -1,0 +1,187 @@
+﻿/* ── 步骤 3：部署多通道左中右拆分沉浸面板 ── */
+.flex-content-row {
+  display: flex;
+  flex-direction: row; /* 启用分栏：左管道卡片列表，右代码监控终端 */
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.install-left {
+  width: 42%; /* 设定黄金非对称比例，将更大空间让给右侧极客控制台 */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 2px;
+  min-height: 0;
+}
+
+.install-right {
+  flex: 1; /* 日志大终端平铺拉伸 */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.install-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-card {
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-slow);
+}
+
+.progress-card.done { 
+  border-color: var(--success-border); 
+  background: var(--success-bg); 
+}
+
+.progress-card.error { 
+  border-color: var(--error-border); 
+  background: var(--error-bg); 
+}
+
+.prog-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.prog-name { 
+  font-size: 12px; 
+  font-weight: 700; 
+  color: var(--text);
+  flex: 1;
+}
+
+.prog-status {
+  font-size: 10px;
+  padding: 1.5px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  background: rgba(148, 163, 184, 0.06);
+  color: var(--text-secondary);
+}
+
+.prog-status.downloading { 
+  background: rgba(37, 99, 235, 0.05); 
+  color: var(--primary); 
+  border-color: rgba(37, 99, 235, 0.1);
+}
+
+.prog-status.installing { 
+  background: var(--warning-bg); 
+  color: var(--warning); 
+  border-color: var(--warning-border);
+}
+
+.prog-status.done { 
+  background: var(--success-bg); 
+  color: var(--success); 
+  border-color: var(--success-border);
+}
+
+.prog-status.error { 
+  background: var(--error-bg); 
+  color: var(--error); 
+  border-color: var(--error-border);
+}
+
+.prog-bar-wrap {
+  height: 4px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.04);
+}
+
+.prog-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4, #3b82f6);
+  background-size: 200% 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease-out;
+  animation: shimmer-bar 2s linear infinite;
+  will-change: width, background-position;
+}
+
+.prog-bar.done { 
+  background: var(--success); 
+  animation: none;
+}
+
+.prog-bar.error { 
+  background: var(--error); 
+  animation: none;
+}
+
+.prog-detail {
+  font-size: 10px;
+  color: var(--text-secondary);
+  min-height: 12px;
+  font-family: Consolas, monospace;
+}
+
+/* ── 步骤 3：右侧精美拟物化 Mac 控制台代码框 ────────────────── */
+.install-right .log-area {
+  flex: 1; /* 撑满纵向空间 */
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.install-right .log-area h4 {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.install-right .log-content {
+  flex: 1;
+  background: #f8fafc !important; /* 极轻纸张灰，带来完美的阅读舒适度 */
+  color: #334155;
+  padding: 30px 12px 12px 12px !important;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 4px rgba(148, 163, 184, 0.06);
+  font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  overflow-y: auto;
+  word-break: break-all;
+  position: relative;
+  max-height: none !important; /* 允许 flex 自由分配等高，不锁死上限 */
+}
+
+/* 👑 精确归位：在日志大框左上角，纯 CSS 描绘经典 Mac 窗口控制圆点 */
+.install-right .log-content::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 6px; height: 6px;
+  background: #ff5f56;
+  border-radius: 50%;
+  box-shadow: 10px 0 0 #ffbd2e, 20px 0 0 #27c93f;
+  z-index: 10;
+}
+
+.log-line { margin-bottom: 1.5px; }
+.log-success { color: #047857; font-weight: 700; }
+.log-error { color: #b91c1c; font-weight: 700; }
+.log-info { color: #0369a1; }
+

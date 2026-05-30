@@ -1,0 +1,355 @@
+﻿/* ── 步骤 2：系统环境扫描结果网格（高雅精致不拉满） ───────────────────── */
+.detect-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2x2 精美网格 */
+  gap: 12px;
+  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
+  align-content: start; /* 极为关键：卡片高度完全内容自适应，不强行填满垂直空间，杜绝空洞 */
+}
+
+.detect-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 20px 16px; /* 底部内边距增加到 20px，完美留出下方 12px 的副标题悬空安全距离 */
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition);
+  min-height: 58px; /* 锁死黄金紧凑的高度，确保卡片饱满统一 */
+}
+
+.detect-item:hover { 
+  border-color: var(--border-hover); 
+  box-shadow: 0 4px 12px rgba(148, 163, 184, 0.06);
+  transform: translateY(-1px);
+}
+
+/* 状态绿色/黄色/红色呼吸发光圆点 */
+.status-dot { 
+  width: 8px; 
+  height: 8px; 
+  border-radius: 50%; 
+  flex-shrink: 0;
+  will-change: transform, opacity;
+}
+
+.status-dot.green { 
+  background: var(--success); 
+  box-shadow: 0 0 6px var(--success);
+  animation: pulse-green 2s infinite alternate;
+}
+
+.status-dot.red { 
+  background: var(--error); 
+  box-shadow: 0 0 6px var(--error);
+  animation: pulse-red 2s infinite alternate;
+}
+
+.status-dot.yellow { 
+  background: var(--warning); 
+  box-shadow: 0 0 6px var(--warning);
+  animation: pulse-yellow 2s infinite alternate;
+}
+
+@keyframes pulse-green {
+  0% { transform: scale(0.95); opacity: 0.65; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); opacity: 0.65; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes pulse-yellow {
+  0% { transform: scale(0.95); opacity: 0.65; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+.detect-info { 
+  flex: 1; 
+  min-width: 0; 
+  position: relative;
+  height: 16px; /* 锁死容器高度完全等于标题高度，杜绝下方的弹性占高干扰 */
+}
+.detect-info strong { 
+  font-size: 12.5px; 
+  font-weight: 800; 
+  display: block; 
+  color: var(--text); 
+  line-height: 16px; /* 标题行高与容器完美齐平 */
+}
+.detect-info span { 
+  font-size: 10px; 
+  color: var(--text-secondary); 
+  position: absolute;
+  top: 19px; /* 精准定位：将副标题版本说明向下悬浮 19px，彻底脱离父级 Flex 占高计算，杜绝居中拉斜问题 */
+  left: 0;
+  display: block; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+  width: 100%;
+}
+
+.detect-action {
+  font-size: 10px;
+  height: 18px; /* 显式物理高度锁死，确保垂直水平绝对中点对齐 */
+  border-radius: 20px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  width: 76px; /* 锁死高精密固定宽度，确保左侧滑动开关在各卡片中在垂直水平上绝对齐平对齐 */
+  display: inline-flex;
+  align-items: center; /* 高阶 Flex 文字垂直完美居中，彻底消除各系统行高基准偏差 */
+  justify-content: center; /* 高阶 Flex 文字水平完美居中 */
+  flex-shrink: 0; /* 杜绝弹性收缩挤压 */
+}
+
+.detect-action.will-install { 
+  background: rgba(37, 99, 235, 0.05); 
+  color: var(--primary); 
+  border-color: rgba(37, 99, 235, 0.1);
+}
+
+.detect-action.skip { 
+  background: var(--success-bg); 
+  color: var(--success); 
+  border-color: var(--success-border);
+}
+
+.detect-action.upgrade { 
+  background: var(--warning-bg); 
+  color: var(--warning); 
+  border-color: var(--warning-border);
+}
+
+/* ── 步骤 2：跳过安装半圆胶囊滑动控制按钮 ───────────────── */
+.skip-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* 滑动槽与“安装”文字对齐舒展透气 */
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 3.5px 8px 3.5px 6px; /* 锁死紧凑舒适的外 Padding */
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 20px; /* 完美对称胶囊圆角，与滑动开关圆边极度契合 */
+  transition: all var(--transition);
+  user-select: none;
+}
+
+.skip-checkbox span {
+  line-height: 1; /* 规范文本行高模型 */
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1.5px; /* 极致视觉偏置微调：克服中文字重下垂，达到视觉上的 100% 物理垂直中轴线 */
+}
+
+.skip-checkbox:hover {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── 步骤 2：极美环境检测摘要提示面板 ───────── */
+.detect-summary-panel {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(37, 99, 235, 0.03);
+  border: 1px dashed rgba(37, 99, 235, 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: fadeInUp 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.detect-summary-panel .summary-icon {
+  font-size: 15px;
+  background: rgba(37, 99, 235, 0.06);
+  padding: 5px 6px;
+  border-radius: 6px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.detect-summary-panel .summary-body h4 {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.detect-summary-panel .summary-body p {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.detect-summary-panel .badge-skip {
+  color: var(--success);
+  font-weight: 700;
+  background: var(--success-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid var(--success-border);
+}
+
+.detect-summary-panel .badge-upgrade {
+  color: var(--warning);
+  font-weight: 700;
+  background: rgba(217, 119, 6, 0.06);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+}
+
+.detect-summary-panel .badge-install {
+  color: var(--primary);
+  font-weight: 700;
+  background: var(--primary-glow);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+/* 扫描进行时（Loading状态），智能自动隐藏底部提示面板，确保加载圆盘居中大方 */
+.page-content:has(.detect-loading) .detect-summary-panel {
+  display: none !important;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 步骤 2：雷达量子检测扫描特效 ────────────────────────── */
+.detect-loading {
+  grid-column: 1 / -1; /* 横跨两列 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 40px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* 双环交互雷达圆盘 */
+.detect-loading .spinner {
+  width: 44px;
+  height: 44px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  border: 3px solid rgba(37, 99, 235, 0.05);
+  border-top: 3px solid var(--primary);
+  border-right: 3px solid var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.08);
+  position: relative;
+  will-change: transform;
+}
+
+.detect-loading .spinner::after {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: 4px; bottom: 4px;
+  border: 2px solid rgba(148, 163, 184, 0.05);
+  border-bottom: 2px solid var(--border-hover);
+  border-radius: 50%;
+  animation: spin-reverse 1.4s linear infinite;
+}
+
+/* 当雷达扫描动画处于 Grid 容器内，自动更改布局为纯Flex纵横垂直完美居中 */
+.detect-results:has(.detect-loading) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 250px;
+  margin-top: 0;
+}
+
+/* ── 步骤 2：附加工具选择区域 ───────────────────────────── */
+.bundled-tools-area {
+  margin-top: 16px;
+}
+
+.bundled-tools-section .section-subtitle {
+  margin-bottom: 10px;
+}
+
+.bundled-tools-section .section-subtitle h3 {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.bundled-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bundled-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.bundled-item:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow);
+}
+
+.bundled-item:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.bundled-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bundled-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.bundled-item:has(input:checked) .bundled-badge {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+}
+
+

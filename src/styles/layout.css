@@ -1,0 +1,291 @@
+﻿
+/* ── 沉浸式高级渐变背景 ─────────────────────── */
+.premium-light-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(at 0% 0%, #f1f5f9 0px, transparent 50%),
+              radial-gradient(at 100% 100%, #cbd5e1 0px, transparent 50%),
+              #e2e8f0;
+}
+
+/* ── 客户端主体卡片容器（左右切分大面板） ─── */
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: row; /* 启用左右双栏并排结构 */
+  background: var(--bg-card);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── 左侧修长步进器面板 ─────────────── */
+.app-sidebar {
+  width: 165px; /* 精简侧边栏宽度，为右侧核心区释放无限视野 */
+  background: var(--bg-sidebar);
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sidebar);
+  z-index: 2;
+  transition: all var(--transition);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.brand-logo {
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.15));
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.brand-text h1 {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.brand-subtitle {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* 步进器导航样式 */
+.app-sidebar .stepper {
+  display: flex;
+  flex-direction: column; /* 纵向对齐排布 */
+  align-items: flex-start;
+  gap: 0px;
+  flex: 1;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.app-sidebar .step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  opacity: 0.55;
+  width: 100%;
+  transition: all var(--transition);
+  cursor: default;
+}
+
+.app-sidebar .step.active {
+  opacity: 1;
+  background: rgba(37, 99, 235, 0.05);
+  border-color: rgba(37, 99, 235, 0.08);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-sidebar .step.done {
+  opacity: 0.85;
+}
+
+.app-sidebar .step-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.app-sidebar .step.active .step-num {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.2);
+}
+
+.app-sidebar .step.done .step-num {
+  background: var(--success);
+  color: white;
+  box-shadow: 0 1px 4px rgba(5, 150, 105, 0.2);
+}
+
+.app-sidebar .step-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-sidebar .step.active .step-label {
+  color: var(--primary);
+}
+
+.app-sidebar .step.done .step-label {
+  color: var(--success);
+}
+
+/* 纵向连线装饰 */
+.app-sidebar .step-line {
+  width: 2px;
+  height: 14px;
+  background: rgba(148, 163, 184, 0.08);
+  margin-left: 17px; /* 与 18px 的圆点中心轴线完美对齐 */
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.btn-logout:hover {
+  background: var(--error-bg);
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.version-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.power-hint {
+  font-size: 8px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── 右侧沉浸式主内容工作区 ──────────────────────────────────── */
+.app-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 极为核心：防止父级 flex 被内部溢出强行拉高，保障滚动条建立 */
+  min-width: 0;
+}
+
+/* ── 步骤页面过渡与底层框架 ───────────────────────────── */
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  min-height: 0;
+}
+
+.page.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto; /* 开启原生流畅物理回弹滚动 */
+  padding: 24px 30px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 30px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+/* ── 侧边栏拖拽调整手柄（VS Code 风格） ─────────── */
+.sidebar-resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 10;
+  transition: background var(--transition);
+}
+
+.sidebar-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1px;
+  width: 2px;
+  background: transparent;
+  transition: background var(--transition);
+}
+
+.sidebar-resize-handle:hover::after,
+.sidebar-resize-handle.active::after {
+  background: var(--primary);
+}
+
+.sidebar-resize-handle:hover,
+.sidebar-resize-handle.active {
+  background: rgba(37, 99, 235, 0.04);
+}
+

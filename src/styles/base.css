@@ -1,0 +1,81 @@
+﻿/* ================================================================
+   东神脚手架开发环境安装器 — 微软 Fluent Premium Light 客户端主题
+   风格：左极简侧边栏 + 右沉浸控制台（极致响应式流式布局）
+   配色：微拟物柔和卡片纸质感、丝滑边缘渐变阴影、电控科技蓝/薄荷绿点缀
+   ================================================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* 基础科技蓝/深蓝核心变量 */
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-glow: rgba(37, 99, 235, 0.08);
+  --accent-cyan: #0891b2;
+  
+  /* 智能检测与部署状态微发光指示色 */
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-glow: rgba(5, 150, 105, 0.12);
+  
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-glow: rgba(217, 119, 6, 0.12);
+  
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-glow: rgba(220, 38, 38, 0.12);
+
+  /* 扁平轻量纸张感面板色 */
+  --bg: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --border-active: #93c5fd;
+  
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --radius: 12px;
+  
+  /* 极轻量多层环境散射阴影 */
+  --shadow-sm: 0 1px 3px rgba(148, 163, 184, 0.05);
+  --shadow: 0 10px 30px rgba(148, 163, 184, 0.05), 0 1px 3px rgba(148, 163, 184, 0.02);
+  --shadow-md: 0 16px 40px rgba(148, 163, 184, 0.1), 0 1px 5px rgba(148, 163, 184, 0.03);
+  --shadow-sidebar: 6px 0 24px rgba(148, 163, 184, 0.04);
+  
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 针对低性能设备减弱过渡动效 */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
