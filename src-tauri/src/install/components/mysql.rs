@@ -19,7 +19,7 @@ use crate::install::{emit_done, emit_status};
 use tauri::ipc::Channel;
 use tauri::AppHandle;
 
-/// 执行 MySQL 完整安装流程。
+/// 执行 MySQL 完整安装流程：冲突清理 → 下载 → 解压 → 配置 → 服务注册。
 pub async fn install(
     app: &AppHandle,
     install_root: &str,
@@ -28,6 +28,10 @@ pub async fn install(
     mysql_password: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
+    // 安装前清理旧版本冲突：移除旧 PATH 条目、重置 MYSQL_HOME
+    // 注意：MySQL 服务清理由下方 cleanup_old_service() 单独负责
+    crate::install::conflict::resolve_conflicts(app, "mysql")?;
+
     validate_install_path(install_root)?;
 
     emit_status(

@@ -13,7 +13,7 @@ use std::process::Command;
 use tauri::ipc::Channel;
 use tauri::AppHandle;
 
-/// 执行 Node.js 完整安装流程：下载 → MSI 静默安装 → 环境变量 → npm 镜像。
+/// 执行 Node.js 完整安装流程：冲突清理 → 下载 → MSI 静默安装 → 环境变量 → npm 镜像。
 pub async fn install(
     app: &AppHandle,
     install_root: &str,
@@ -21,6 +21,9 @@ pub async fn install(
     version: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
+    // 安装前清理旧版本冲突：卸载旧 MSI、移除旧 PATH 条目、重置环境变量
+    crate::install::conflict::resolve_conflicts(app, "nodejs")?;
+
     emit_status(
         app,
         "nodejs",

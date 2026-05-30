@@ -27,12 +27,23 @@
 
 ```
 Step 1 配置  →  Step 2 检测  →  Step 3 安装  →  Step 4 完成
-选择安装路径      扫描已安装环境     下载 + 安装       验证 + 结果展示
-选择版本          跳过已有组件       实时进度          一键验证命令
-MySQL 密码
+选择安装路径      扫描已安装环境     冲突清理 + 下载     验证 + 结果展示
+选择版本          版本匹配判断       安装 + 配置         一键验证命令
+MySQL 密码        绿/黄/红指示灯     实时进度
 附加工具勾选
 模拟测试开关
 ```
+
+### 环境冲突处理
+
+当主机已存在旧版本开发环境但与用户选择的版本不匹配时，安装器会在安装前自动执行冲突清理：
+
+| 组件 | 冲突处理策略 |
+|------|-------------|
+| **Node.js** | 从注册表查找旧版 MSI 产品代码 → `msiexec /x` 静默卸载 → 清理 PATH → 重置 NODE_HOME |
+| **JDK** | 移除 PATH 中旧 JDK 条目 → 清理 Oracle javapath 快捷方式目录 → 重置 JAVA_HOME |
+| **Maven** | 移除 PATH 中旧 Maven 条目(mvn.cmd/mvn.bat) → 重置 MAVEN_HOME 和 M2_HOME |
+| **MySQL** | 移除 PATH 中旧 MySQL 条目 → 重置 MYSQL_HOME → 停止/删除旧服务 |
 
 ## 项目结构
 
@@ -40,38 +51,53 @@ MySQL 密码
 web_manage_install/
 ├── src/                           # 前端（纯 HTML + CSS + JS）
 │   ├── index.html                 #   主页面（四步骤 SPA）
-│   ├── main.js                    #   入口：初始化、事件绑定
+│   ├── main.js                    #   入口：认证守卫 + 动态加载业务模块
 │   ├── styles.css                 #   样式
 │   └── js/
 │       ├── navigation.js          #     步骤导航
-│       ├── detect.js              #     Step 2 环境检测
-│       ├── installer.js           #     Step 3 安装逻辑 + 取消
+│       ├── detect.js              #     Step 2 环境检测 + installFlags 维护
+│       ├── installer.js           #     Step 3 安装逻辑 + 取消 + 回滚
 │       ├── results.js             #     Step 4 结果展示
-│       └── versions.js            #     版本号常量
+│       ├── versions.js            #     版本目录加载（后端实时获取）
+│       ├── auth.js                #     认证逻辑
+│       └── authUI.js              #     认证 UI
 ├── src-tauri/                     # Rust 后端
 │   ├── Cargo.toml
 │   └── src/
-│       ├── lib.rs                 #   IPC 命令注册 + 应用启动
-│       ├── main.rs                #   Tauri 入口
-│       ├── types.rs               #   InstallConfig / CancelToken 等类型
-│       ├── download.rs            #   HTTP 下载 + 镜像源 + 代理绕过
-│       ├── env_config.rs          #   环境变量读写（HKLM→HKCU→setx 三级回退）
-│       ├── detect/
-│       │   ├── mod.rs             #     环境检测总调度
-│       │   ├── env_reader.rs      #     从注册表读取最新 PATH 和 *_HOME
-│       │   ├── node.rs            #     Node.js 检测
-│       │   ├── jdk.rs             #     JDK 检测
-│       │   ├── maven.rs           #     Maven 检测
-│       │   ├── mysql.rs           #     MySQL 检测
-│       │   └── verify.rs          #     安装后验证命令执行
-│       └── installers/
-│           ├── mod.rs             #     安装总调度
-│           ├── node.rs            #     Node.js MSI 安装
-│           ├── jdk.rs             #     JDK 解压安装
-│           ├── maven.rs           #     Maven 解压 + settings.xml
-│           ├── mysql.rs           #     MySQL 绿色版安装
-│           ├── bundled.rs         #     附加工具下载（IDEA/Navicat/Redis）
-│           └── utils.rs           #     解压、文件操作工具
+│       ├── main.rs                #   Tauri 入口 + 命令注册
+│       ├── common/                #   公共能力
+│       │   ├── types.rs           #     InstallConfig / CancelToken 等类型
+│       │   ├── process.rs         #     跨平台进程工具（隐藏窗口）
+│       │   ├── version_policy.rs  #     版本策略集中定义
+│       │   └── ...
+│       ├── detection/             #   环境检测
+│       │   ├── mod.rs             #     检测总调度（detect_environment 命令）
+│       │   ├── components/        #     各组件检测器（node/jdk/maven/mysql）
+│       │   ├── env/               #     注册表环境变量读取 + 命令执行
+│       │   ├── finder/            #     多来源扫描（where/注册表/Program Files）
+│       │   └── verify.rs          #     安装后验证命令
+│       ├── download/              #   下载能力
+│       │   ├── sources/           #     各组件镜像源定义
+│       │   ├── stream.rs          #     流式下载 + 进度回调
+│       │   ├── cache.rs           #     下载缓存
+│       │   └── proxy.rs           #     代理绕过配置
+│       ├── install/               #   安装业务
+│       │   ├── components/        #     各组件安装器（node/jdk/maven/mysql/bundled）
+│       │   ├── conflict/          #     环境冲突解决（安装前清理旧版本）
+│       │   │   ├── mod.rs         #       统一 resolve_conflicts() 调度入口
+│       │   │   ├── path_sanitizer.rs #    通用 PATH 净化器
+│       │   │   ├── node_cleanup.rs #      Node.js MSI 卸载 + PATH 清理
+│       │   │   ├── jdk_cleanup.rs  #      JDK PATH + Oracle javapath 清理
+│       │   │   ├── maven_cleanup.rs #     Maven PATH + M2_HOME 清理
+│       │   │   └── mysql_cleanup.rs #     MySQL PATH + 环境变量清理
+│       │   ├── mysql/             #     MySQL 专用安装细节（service/config/password/...）
+│       │   └── workflow/          #     安装流程编排（orchestrator/cancel/rollback）
+│       ├── system/                #   系统能力
+│       │   ├── env_config.rs      #     环境变量配置门面（HKLM→HKCU→setx 三级回退）
+│       │   ├── env_registry.rs    #     注册表读写
+│       │   ├── env_broadcast.rs   #     WM_SETTINGCHANGE 广播
+│       │   └── path_entry.rs      #     PATH 字符串操作
+│       └── version_catalog/       #   版本目录（实时获取各组件可用版本）
 └── package.json
 ```
 

@@ -12,7 +12,7 @@ use crate::system::env_config;
 use tauri::ipc::Channel;
 use tauri::AppHandle;
 
-/// 执行 JDK 完整安装流程：下载 → ZIP 解压 → JAVA_HOME 环境变量。
+/// 执行 JDK 完整安装流程：冲突清理 → 下载 → ZIP 解压 → JAVA_HOME 环境变量。
 pub async fn install(
     app: &AppHandle,
     install_root: &str,
@@ -20,6 +20,9 @@ pub async fn install(
     version: &str,
     on_progress: &Channel<DownloadProgress>,
 ) -> Result<(), String> {
+    // 安装前清理旧版本冲突：移除旧 PATH 条目、Oracle javapath、重置 JAVA_HOME
+    crate::install::conflict::resolve_conflicts(app, "jdk")?;
+
     emit_status(
         app,
         "jdk",

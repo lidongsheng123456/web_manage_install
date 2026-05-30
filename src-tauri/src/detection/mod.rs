@@ -11,7 +11,7 @@
 //! - `verify`     — Step 4 验证命令执行
 
 mod components;
-mod env;
+pub(crate) mod env;
 pub(crate) mod finder;
 pub mod verify;
 
