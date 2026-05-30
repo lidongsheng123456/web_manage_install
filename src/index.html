@@ -4,7 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>开发环境安装器</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/layout.css" />
+  <link rel="stylesheet" href="/styles/components.css" />
+  <link rel="stylesheet" href="/styles/pages/auth.css" />
+  <link rel="stylesheet" href="/styles/pages/step1.css" />
+  <link rel="stylesheet" href="/styles/pages/step2.css" />
+  <link rel="stylesheet" href="/styles/pages/step3.css" />
+  <link rel="stylesheet" href="/styles/pages/step4.css" />
+  <link rel="stylesheet" href="/styles/animations.css" />
 </head>
 <body>
   <!-- 登录认证层 -->
@@ -84,12 +92,12 @@
       <nav class="stepper">
         <div class="step active" data-step="1">
           <span class="step-num">1</span>
-          <span class="step-label">安装配置</span>
+          <span class="step-label">基础配置</span>
         </div>
         <div class="step-line"></div>
         <div class="step" data-step="2">
           <span class="step-num">2</span>
-          <span class="step-label">系统检测</span>
+          <span class="step-label">检测与选择</span>
         </div>
         <div class="step-line"></div>
         <div class="step" data-step="3">
@@ -99,7 +107,7 @@
         <div class="step-line"></div>
         <div class="step" data-step="4">
           <span class="step-num">4</span>
-          <span class="step-label">完成部署</span>
+          <span class="step-label">完成报告</span>
         </div>
       </nav>
 
@@ -114,6 +122,9 @@
         </div>
       </div>
     </aside>
+
+    <!-- 侧边栏宽度拖拽调整手柄 -->
+    <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
 
     <!-- 右侧沉浸式工作区控制台 -->
     <main class="app-body">
@@ -156,7 +167,7 @@
               </div>
             </div>
 
-            <!-- 右侧卡片：核心环境版本与可选的附加辅助开发工具 -->
+            <!-- 右侧卡片：核心环境版本选择 -->
             <div class="config-card">
               <h3 class="card-subtitle">核心环境版本</h3>
               <div class="version-grid">
@@ -185,32 +196,27 @@
                   </select>
                 </div>
               </div>
-
-              <div class="component-list" id="bundled-tools" style="margin-top: 16px;">
-                <h3 class="card-subtitle-small">附加开发工具 (选填)</h3>
-                <p class="form-hint" style="margin-bottom: 8px;">仅自动下载离线安装包至安装目录，下载完成后需手动执行安装</p>
-                <div class="bundled-grid">
-                  <label class="bundled-item" id="bundled-idea">
-                    <input type="checkbox" id="chk-idea" />
-                    <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
-                    <span class="bundled-title">IntelliJ IDEA 2023.3.8</span>
-                    <span class="bundled-badge">手动安装</span>
-                  </label>
-                  <label class="bundled-item" id="bundled-navicat">
-                    <input type="checkbox" id="chk-navicat" />
-                    <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
-                    <span class="bundled-title">Navicat Premium 17</span>
-                    <span class="bundled-badge">手动安装</span>
-                  </label>
-                  <label class="bundled-item" id="bundled-redis">
-                    <input type="checkbox" id="chk-redis" />
-                    <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
-                    <span class="bundled-title">Redis 5.0.14</span>
-                    <span class="bundled-badge">免安装</span>
-                  </label>
-                </div>
-              </div>
             </div>
+          </div>
+
+          <!-- 激活工具快捷入口（横跨底部） -->
+          <div class="config-card activation-shortcut-card">
+            <h3 class="card-subtitle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg>
+              许可证激活工具
+            </h3>
+            <p class="form-hint">已安装的软件可直接一键激活，无需重新安装流程</p>
+            <div class="activation-shortcut-grid">
+              <button class="btn-activate-shortcut" id="btn-activate-idea-home">
+                <img src="/assets/logos/idea.svg" alt="IDEA" width="22" height="22" />
+                <span>IntelliJ IDEA 激活</span>
+              </button>
+              <button class="btn-activate-shortcut" id="btn-activate-navicat-home">
+                <img src="/assets/logos/navicat.ico" alt="Navicat" width="22" height="22" />
+                <span>Navicat Premium 激活</span>
+              </button>
+            </div>
+            <div class="activation-result" id="activation-result-home"></div>
           </div>
         </div>
         <div class="page-actions">
@@ -219,16 +225,16 @@
         </div>
       </section>
 
-      <!-- 步骤 2：本地已有环境扫描与分析 -->
+      <!-- 步骤 2：环境检测与安装选择 -->
       <section class="page" id="page-2">
         <div class="page-content">
           <div class="section-title">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <h2>系统环境扫描</h2>
+            <h2>环境检测与安装选择</h2>
           </div>
-          <p class="section-desc">正在智能检测您本地系统中已安装的环境及工具版本，以决定哪些项目自动跳过或重装。</p>
+          <p class="section-desc">智能检测本地已安装环境，并统一选择需要安装的核心环境与附加工具。</p>
 
-          <!-- 2x2 网格检测卡片容器 -->
+          <!-- 核心环境检测结果 -->
           <div id="detect-results" class="detect-results">
             <div class="detect-loading">
               <div class="spinner"></div>
@@ -236,12 +242,15 @@
             </div>
           </div>
 
+          <!-- 附加工具选择区域（由 JS 动态填充） -->
+          <div id="bundled-tools-area" class="bundled-tools-area"></div>
+
           <!-- 环境检测提示面板 -->
           <div class="detect-summary-panel">
             <div class="summary-icon">💡</div>
             <div class="summary-body">
-              <h4>环境检测提示</h4>
-              <p>系统已针对 Node.js、JDK、Maven、MySQL 进行深度扫描。<span class="badge-skip">已安装</span> 表示版本匹配，自动跳过；<span class="badge-upgrade">将重新安装</span> 表示版本不匹配，将自动清理旧版本的 PATH 和环境变量后安装所选版本；<span class="badge-install">将安装</span> 表示未检测到，将全新安装。</p>
+              <h4>安装说明</h4>
+              <p>核心环境：<span class="badge-skip">已安装</span> 版本匹配自动跳过；<span class="badge-upgrade">将重新安装</span> 版本不匹配，自动清理旧版后安装；<span class="badge-install">将安装</span> 未检测到，全新安装。附加工具仅下载安装包，需手动执行安装。</p>
             </div>
           </div>
         </div>
@@ -263,69 +272,7 @@
             <p class="section-desc" style="margin-bottom: 16px;">正在从国内高速镜像源拉取资源并执行一键安装，请在此期间保持网络畅通。</p>
 
             <div id="install-progress" class="install-progress">
-              <div class="progress-card" id="prog-nodejs">
-                <div class="prog-header">
-                  <div class="comp-icon node small"><img src="/assets/logos/nodejs.svg" alt="Node.js" /></div>
-                  <span class="prog-name" id="name-nodejs">Node.js</span>
-                  <span class="prog-status" id="status-nodejs">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-nodejs"></div></div>
-                <div class="prog-detail" id="detail-nodejs"></div>
-              </div>
-              <div class="progress-card" id="prog-jdk">
-                <div class="prog-header">
-                  <div class="comp-icon jdk small"><img src="/assets/logos/jdk.png" alt="JDK" /></div>
-                  <span class="prog-name" id="name-jdk">JDK</span>
-                  <span class="prog-status" id="status-jdk">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-jdk"></div></div>
-                <div class="prog-detail" id="detail-jdk"></div>
-              </div>
-              <div class="progress-card" id="prog-maven">
-                <div class="prog-header">
-                  <div class="comp-icon maven small"><img src="/assets/logos/maven.png" alt="Maven" /></div>
-                  <span class="prog-name" id="name-maven">Maven</span>
-                  <span class="prog-status" id="status-maven">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-maven"></div></div>
-                <div class="prog-detail" id="detail-maven"></div>
-              </div>
-              <div class="progress-card" id="prog-mysql">
-                <div class="prog-header">
-                  <div class="comp-icon mysql small"><img src="/assets/logos/mysql.svg" alt="MySQL" /></div>
-                  <span class="prog-name" id="name-mysql">MySQL</span>
-                  <span class="prog-status" id="status-mysql">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-mysql"></div></div>
-                <div class="prog-detail" id="detail-mysql"></div>
-              </div>
-              <div class="progress-card" id="prog-idea" style="display:none;">
-                <div class="prog-header">
-                  <div class="comp-icon small idea"><img src="/assets/logos/idea.svg" alt="IntelliJ IDEA" /></div>
-                  <span class="prog-name" id="name-idea">IntelliJ IDEA</span>
-                  <span class="prog-status" id="status-idea">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-idea"></div></div>
-                <div class="prog-detail" id="detail-idea"></div>
-              </div>
-              <div class="progress-card" id="prog-navicat" style="display:none;">
-                <div class="prog-header">
-                  <div class="comp-icon small navicat"><img src="/assets/logos/navicat.ico" alt="Navicat Premium" /></div>
-                  <span class="prog-name" id="name-navicat">Navicat Premium</span>
-                  <span class="prog-status" id="status-navicat">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-navicat"></div></div>
-                <div class="prog-detail" id="detail-navicat"></div>
-              </div>
-              <div class="progress-card" id="prog-redis" style="display:none;">
-                <div class="prog-header">
-                  <div class="comp-icon small redis"><img src="/assets/logos/redis.svg" alt="Redis" /></div>
-                  <span class="prog-name" id="name-redis">Redis</span>
-                  <span class="prog-status" id="status-redis">等待中</span>
-                </div>
-                <div class="prog-bar-wrap"><div class="prog-bar" id="bar-redis"></div></div>
-                <div class="prog-detail" id="detail-redis"></div>
-              </div>
+              <!-- 进度卡片由 JS 根据用户选择动态渲染 -->
             </div>
           </div>
 
@@ -398,24 +345,9 @@
 
           <div class="verify-hint">
             <h4>快速交互式验证</h4>
-            <p>双击或直接点击以下预设验证指令，即可秒级读取当前安装的系统实际版本：</p>
-            <div class="verify-commands">
-              <div class="verify-cmd" data-cmd="node -v">
-                <span class="verify-cmd-text">node -v</span>
-                <span class="verify-cmd-result" id="verify-node"></span>
-              </div>
-              <div class="verify-cmd" data-cmd="java -version">
-                <span class="verify-cmd-text">java -version</span>
-                <span class="verify-cmd-result" id="verify-java"></span>
-              </div>
-              <div class="verify-cmd" data-cmd="mvn -v">
-                <span class="verify-cmd-text">mvn -v</span>
-                <span class="verify-cmd-result" id="verify-mvn"></span>
-              </div>
-              <div class="verify-cmd" data-cmd="mysql -V">
-                <span class="verify-cmd-text">mysql -V</span>
-                <span class="verify-cmd-result" id="verify-mysql"></span>
-              </div>
+            <p>点击以下验证指令，即可读取当前安装的系统实际版本：</p>
+            <div class="verify-commands" id="verify-commands">
+              <!-- 验证命令由 JS 根据实际安装的组件动态渲染 -->
             </div>
             <button class="btn-secondary btn-small" id="btn-verify-all" style="margin-top: 10px; width: 100%;">一键验证全部组件</button>
           </div>

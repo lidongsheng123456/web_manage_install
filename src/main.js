@@ -2,11 +2,14 @@
  * 应用入口模块
  *
  * 认证守卫优先加载（无 Tauri 依赖），认证通过后再动态加载业务模块。
+ * 对标 Spring Boot 的 Application.java，负责引导启动和模块编排。
  */
 
 import { initAuthUI, initLogoutBtn } from './js/authUI.js';
+import { initSidebarResize } from './js/utils/resize.js';
 
 initAuthUI(bootstrapApp);
+initSidebarResize();
 
 /**
  * 认证通过后动态加载 Tauri 依赖模块并启动主应用逻辑
@@ -14,145 +17,76 @@ initAuthUI(bootstrapApp);
 async function bootstrapApp() {
   const [
     { goToStep },
-    { runDetection, resetFlags },
-    { runInstall },
-    { renderResults, initResultEvents },
-    { loadVersionCatalog }
+    { initStep1 },
+    { initStep2, runStep2Detection },
+    { initStep3, runStep3Install },
+    { initStep4, renderStep4Results },
+    { getVersion }
   ] = await Promise.all([
     import('./js/navigation.js'),
-    import('./js/detect.js'),
-    import('./js/installer.js'),
-    import('./js/results.js'),
-    import('./js/versions.js')
+    import('./js/pages/step1.js'),
+    import('./js/pages/step2.js'),
+    import('./js/pages/step3.js'),
+    import('./js/pages/step4.js'),
+    import('./js/services/tauriApi.js'),
   ]);
 
-  const { open } = window.__TAURI__.dialog;
+  const { resetInstallState } = await import('./js/state/appState.js');
 
-  try {
-    const version = await window.__TAURI__.app.getVersion();
-    const badge = document.getElementById('app-version');
-    if (badge) badge.textContent = `v${version}`;
-  } catch (_) {}
+  displayVersion(getVersion);
 
-  const CORE_VERSION_SELECTS = ['ver-nodejs', 'ver-jdk', 'ver-maven', 'ver-mysql'];
-
-  function populateVersionSelect(selectId, versions) {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-    select.innerHTML = versions.map(v =>
-      `<option value="${v.value}" ${v.default ? 'selected' : ''} title="${v.source || ''}">${v.label}</option>`
-    ).join('');
-  }
-
-  function renderVersionCatalog(catalog) {
-    populateVersionSelect('ver-nodejs', catalog.nodejs);
-    populateVersionSelect('ver-jdk', catalog.jdk);
-    populateVersionSelect('ver-maven', catalog.maven);
-    populateVersionSelect('ver-mysql', catalog.mysql);
-  }
-
-  function setCoreVersionSelectsDisabled(disabled) {
-    CORE_VERSION_SELECTS.forEach(id => {
-      const select = document.getElementById(id);
-      if (select) select.disabled = disabled;
-    });
-  }
-
-  function renderVersionLoading() {
-    CORE_VERSION_SELECTS.forEach(id => {
-      const select = document.getElementById(id);
-      if (!select) return;
-      select.innerHTML = '<option value="">正在加载版本...</option>';
-      select.disabled = true;
-    });
-    document.getElementById('btn-next-1').disabled = true;
-  }
-
-  function renderVersionError(message) {
-    CORE_VERSION_SELECTS.forEach(id => {
-      const select = document.getElementById(id);
-      if (!select) return;
-      select.innerHTML = '<option value="">版本加载失败</option>';
-      select.disabled = true;
-    });
-    document.getElementById('btn-next-1').disabled = true;
-    console.error('加载实时版本目录失败', message);
-  }
-
-  renderVersionLoading();
-
-  loadVersionCatalog()
-    .then(catalog => {
-      renderVersionCatalog(catalog);
-      setCoreVersionSelectsDisabled(false);
-      document.getElementById('btn-next-1').disabled = false;
-    })
-    .catch(renderVersionError);
-
-  // Step 1: 配置页事件
-
-  document.getElementById('btn-browse').addEventListener('click', async () => {
-    try {
-      const selected = await open({ directory: true, multiple: false });
-      if (selected) {
-        document.getElementById('install-path').value = selected;
-      }
-    } catch (e) {
-      console.error('浏览目录失败', e);
-    }
-  });
-
-  document.getElementById('btn-next-1').addEventListener('click', () => {
+  initStep1(() => {
     goToStep(2);
-    runDetection();
+    runStep2Detection();
   });
 
-  // Step 2: 检测页事件
+  initStep2(
+    () => goToStep(1),
+    () => {
+      goToStep(3);
+      runStep3Install();
+    }
+  );
 
-  document.getElementById('btn-prev-2').addEventListener('click', () => goToStep(1));
-
-  document.getElementById('btn-next-2').addEventListener('click', () => {
-    goToStep(3);
-    runInstall();
-  });
-
-  // Step 3: 安装页事件
-
-  document.getElementById('btn-next-3').addEventListener('click', () => {
+  initStep3(() => {
     goToStep(4);
-    renderResults();
+    renderStep4Results();
   });
 
-  // Step 4: 结果页事件
+  initStep4(resetAndGoHome);
+
+  initLogoutBtn();
 
   function resetAndGoHome() {
-    resetFlags();
+    resetInstallState();
     window._installResults = null;
 
-    document.getElementById('btn-next-2').disabled = true;
-    document.getElementById('btn-next-3').disabled = true;
-    document.getElementById('btn-cancel-install').style.display = 'none';
-    document.getElementById('btn-cancel-install').disabled = false;
-    document.getElementById('btn-cancel-install').textContent = '取消安装';
-    document.getElementById('btn-rollback').style.display = 'none';
-    document.getElementById('btn-back-to-config').style.display = 'none';
+    const btnNext2 = document.getElementById('btn-next-2');
+    const btnNext3 = document.getElementById('btn-next-3');
+    const btnCancel = document.getElementById('btn-cancel-install');
+    const btnRollback = document.getElementById('btn-rollback');
+    const btnBackConfig = document.getElementById('btn-back-to-config');
 
-    document.getElementById('log-content').innerHTML = '';
+    if (btnNext2) btnNext2.disabled = true;
+    if (btnNext3) btnNext3.disabled = true;
+    if (btnCancel) { btnCancel.style.display = 'none'; btnCancel.disabled = false; btnCancel.textContent = '取消安装'; }
+    if (btnRollback) btnRollback.style.display = 'none';
+    if (btnBackConfig) btnBackConfig.style.display = 'none';
 
-    document.querySelectorAll('.progress-card').forEach(c => c.classList.remove('done', 'error'));
-    document.querySelectorAll('.prog-bar').forEach(b => { b.style.width = '0%'; b.className = 'prog-bar'; });
-    document.querySelectorAll('.prog-status').forEach(s => { s.textContent = '等待中'; s.className = 'prog-status'; });
-    document.querySelectorAll('.prog-detail').forEach(d => { d.textContent = ''; });
-    ['prog-idea', 'prog-navicat', 'prog-redis'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
+    const logContent = document.getElementById('log-content');
+    if (logContent) logContent.innerHTML = '';
 
-    document.querySelectorAll('.verify-cmd-result').forEach(r => { r.textContent = ''; r.className = 'verify-cmd-result'; });
+    const installProgress = document.getElementById('install-progress');
+    if (installProgress) installProgress.innerHTML = '';
 
     goToStep(1);
   }
+}
 
-  initResultEvents(resetAndGoHome);
-  initLogoutBtn();
+async function displayVersion(getVersion) {
+  try {
+    const version = await getVersion();
+    const badge = document.getElementById('app-version');
+    if (badge) badge.textContent = `v${version}`;
+  } catch (_) {}
 }
