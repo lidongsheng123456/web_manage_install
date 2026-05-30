@@ -154,36 +154,3 @@ button:focus-visible { box-shadow: 0 0 0 3px var(--primary-glow); }
    登录认证页 — 梦幻云端沉浸式 Glassmorphism 浅色主题
    ================================================================ */
 
-.auth-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 纯净、克制的云端单色背景，极具空间感 */
-  background-color: #f0f9ff;
-  padding: 24px;
-  overflow: hidden; /* 裁剪漂出屏幕的云朵，防止出现滚动条 */
-  
-  /* 精致平滑过渡：供淡出动画使用 */
-  opacity: 1;
-  transform: scale(1);
-  filter: blur(0);
-  transition: 
-    opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
-    transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
-    filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.auth-overlay.fade-out {
-  opacity: 0;
-  transform: scale(1.05);
-  filter: blur(20px);
-  pointer-events: none;
-}
-
-.auth-overlay.hidden {
-  display: none;
-}
-
