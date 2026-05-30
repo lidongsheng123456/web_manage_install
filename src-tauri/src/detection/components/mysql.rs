@@ -13,12 +13,12 @@ use crate::common::types::ComponentStatus;
 use crate::common::version_policy::mysql as mysql_policy;
 use crate::detection::env::*;
 
-pub fn detect(expected_prefix: &str) -> ComponentStatus {
-    let expected_label = format!("{expected_prefix}.x");
+pub fn detect(expected_version: &str) -> ComponentStatus {
+    let expected_label = expected_version.to_string();
 
     // 1) PATH 执行 mysql -V
     if let Some(ver) = parse_mysql_output(run_cmd_fresh("mysql", &["-V"])) {
-        return status(ver, expected_prefix, &expected_label);
+        return status(ver, expected_version, &expected_label);
     }
 
     // 2) MYSQL_HOME 环境变量
@@ -26,7 +26,7 @@ pub fn detect(expected_prefix: &str) -> ComponentStatus {
         if k == "MYSQL_HOME" {
             let exe = format!(r"{}\bin\mysql.exe", v.trim_end_matches('\\'));
             if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
-                return status(ver, expected_prefix, &expected_label);
+                return status(ver, expected_version, &expected_label);
             }
         }
     }
@@ -34,21 +34,21 @@ pub fn detect(expected_prefix: &str) -> ComponentStatus {
     // 3) Windows 服务 → 找到 mysql.exe
     if let Some(exe) = detect_via_service() {
         if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
     // 4) MySQL AB 注册表
     if let Some(exe) = detect_via_mysql_registry() {
         if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
     // 5) where 命令搜索
     for path in find_via_where("mysql") {
         if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
@@ -56,14 +56,14 @@ pub fn detect(expected_prefix: &str) -> ComponentStatus {
     for loc in find_install_location("MySQL") {
         let exe = format!(r"{}\bin\mysql.exe", loc.trim_end_matches('\\'));
         if let Some(ver) = parse_mysql_output(try_exe_at(&exe, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
     // 7) 扫描 Program Files
     for path in scan_program_subdirs("MySQL", "MySQL Server", r"bin\mysql.exe") {
         if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
@@ -71,12 +71,12 @@ pub fn detect(expected_prefix: &str) -> ComponentStatus {
     let patterns = &[r"mysql\bin\mysql.exe"];
     for path in scan_common_install_dirs(patterns) {
         if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
     for path in scan_common_subdirs("", "mysql", r"bin\mysql.exe") {
         if let Some(ver) = parse_mysql_output(try_exe_at(&path, &["-V"])) {
-            return status(ver, expected_prefix, &expected_label);
+            return status(ver, expected_version, &expected_label);
         }
     }
 
@@ -99,11 +99,11 @@ fn parse_mysql_output(output: Option<String>) -> Option<String> {
     }
 }
 
-fn status(ver: String, expected_prefix: &str, expected_label: &str) -> ComponentStatus {
+fn status(ver: String, expected_version: &str, expected_label: &str) -> ComponentStatus {
     ComponentStatus {
         name: "MySQL".into(),
         installed: true,
-        version_match: ver.starts_with(&format!("{expected_prefix}.")),
+        version_match: ver == expected_version,
         version: ver,
         expected_version: expected_label.into(),
     }

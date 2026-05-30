@@ -11,8 +11,7 @@ use crate::install::mysql::password::set_root_password;
 use crate::install::mysql::path::{select_port, validate_install_path};
 use crate::install::mysql::runtime::check_vcruntime;
 use crate::install::mysql::service::{
-    cleanup_old_service, initialize_data_dir, register_service, service_name_for_version,
-    start_service,
+    initialize_data_dir, register_service, service_name_for_version, start_service,
 };
 use crate::install::utils;
 use crate::install::{emit_done, emit_status};
@@ -55,7 +54,7 @@ pub async fn install(
 
     let service_name = service_name_for_version(version);
     check_vcruntime(app);
-    cleanup_old_service(app);
+    // 旧服务已由 conflict::mysql_cleanup 在流程开头停止并删除，此处不再重复
     initialize_data_dir(app, &target)?;
     register_service(app, &target, service_name)?;
     start_service(app, service_name)?;

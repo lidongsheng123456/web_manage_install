@@ -11,6 +11,10 @@ pub fn service_name_for_version(version: &str) -> &'static str {
 }
 
 /// 停止并删除旧的 MySQL Windows 服务。
+///
+/// 注意：此功能已整合到 `conflict::mysql_cleanup` 模块中，
+/// 在安装流程开头的冲突清理阶段统一执行。保留此函数以备独立调用。
+#[allow(dead_code)]
 pub fn cleanup_old_service(app: &AppHandle) {
     emit_status(app, "mysql", "config", "正在清理旧 MySQL 服务...");
     for &service_name in mysql_policy::MANAGED_SERVICE_NAMES {

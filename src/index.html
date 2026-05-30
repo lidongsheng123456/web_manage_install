@@ -236,12 +236,12 @@
             </div>
           </div>
 
-          <!-- 环境检测提示面板，精美填充底部留白 -->
+          <!-- 环境检测提示面板 -->
           <div class="detect-summary-panel">
             <div class="summary-icon">💡</div>
             <div class="summary-body">
               <h4>环境检测提示</h4>
-              <p>系统已针对 JDK, Maven, MySQL 和 Node.js 进行了深度可用性扫描。标记为 <span class="badge-skip">已安装</span> 的组件表示本地已存在合适版本，我们将不会对其重复覆盖；标记为 <span class="badge-install">将安装</span> 的组件将由一键管道自动为您下载和安装。</p>
+              <p>系统已针对 Node.js、JDK、Maven、MySQL 进行深度扫描。<span class="badge-skip">已安装</span> 表示版本匹配，自动跳过；<span class="badge-upgrade">将重新安装</span> 表示版本不匹配，将自动清理旧版本的 PATH 和环境变量后安装所选版本；<span class="badge-install">将安装</span> 表示未检测到，将全新安装。</p>
             </div>
           </div>
         </div>

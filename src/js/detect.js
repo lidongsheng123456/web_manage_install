@@ -38,15 +38,12 @@ export async function runDetection() {
   const mavenVersion = document.getElementById('ver-maven')?.value || '3.9.6';
   const mysqlVersion = document.getElementById('ver-mysql')?.value || '8.0.36';
 
-  /* MySQL 版本只取前缀 "8.0" 用于匹配 */
-  const mysqlPrefix = mysqlVersion.split('.').slice(0, 2).join('.');
-
   try {
     detectResults = await invoke('detect_environment', {
       nodeVersion,
       jdkVersion,
       mavenVersion,
-      mysqlVersion: mysqlPrefix,
+      mysqlVersion,
     });
     renderDetectResults(detectResults);
     document.getElementById('btn-next-2').disabled = false;

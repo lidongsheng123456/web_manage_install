@@ -31,6 +31,20 @@ fn has_direct_files(dir: &str) -> bool {
 /// 大多数组件 ZIP 包的结构为 `顶层目录/bin/...`，
 /// 解压后需要将顶层目录重命名到最终安装路径。
 pub fn extract_zip(zip_path: &str, dest_dir: &str) -> Result<String, String> {
+    let zip = Path::new(zip_path);
+    if !zip.exists() {
+        return Err(format!(
+            "ZIP 文件不存在: {zip_path}（可能下载未完成或被安全软件删除）"
+        ));
+    }
+    if let Some(parent) = zip.parent() {
+        if !parent.exists() {
+            return Err(format!(
+                "ZIP 文件所在目录不存在: {}（os error 3 通常由此引起）",
+                parent.display()
+            ));
+        }
+    }
     let file = std::fs::File::open(zip_path).map_err(|e| format!("打开 ZIP 失败: {e}"))?;
     let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("读取 ZIP 失败: {e}"))?;
 
@@ -113,7 +127,21 @@ pub fn extract_and_move(
     let target = format!("{install_root}\\{target_name}");
 
     if Path::new(&target).exists() {
-        std::fs::remove_dir_all(&target).ok();
+        let mut deleted = false;
+        for attempt in 0..3 {
+            if std::fs::remove_dir_all(&target).is_ok() {
+                deleted = true;
+                break;
+            }
+            if attempt < 2 {
+                std::thread::sleep(std::time::Duration::from_secs(2));
+            }
+        }
+        if !deleted && Path::new(&target).exists() {
+            return Err(format!(
+                "无法删除旧安装目录 {target}，可能有进程正在使用其中的文件。请关闭相关程序后重试"
+            ));
+        }
     }
 
     std::fs::rename(&source, &target)

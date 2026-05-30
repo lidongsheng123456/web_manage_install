@@ -16,7 +16,7 @@ pub(crate) mod finder;
 pub mod verify;
 
 use crate::common::types::ComponentStatus;
-use crate::common::version_policy::{defaults, jdk as jdk_policy, mysql as mysql_policy};
+use crate::common::version_policy::{defaults, jdk as jdk_policy};
 
 /// 检测系统中所有目标组件的安装状态。
 ///
@@ -34,9 +34,7 @@ pub async fn detect_environment(
         .map(|version| jdk_policy::major_from_version(&version))
         .unwrap_or_else(|| defaults::JDK.into());
     let mv = maven_version.unwrap_or_else(|| defaults::MAVEN.into());
-    let myv = mysql_version
-        .map(|version| mysql_policy::series(&version).to_string())
-        .unwrap_or_else(|| mysql_policy::series(defaults::MYSQL).into());
+    let myv = mysql_version.unwrap_or_else(|| defaults::MYSQL.into());
 
     Ok(vec![
         components::node::detect(&nv),

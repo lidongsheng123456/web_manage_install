@@ -30,7 +30,10 @@ pub async fn run_verify(cmd: String) -> Result<String, String> {
         let fresh_envs = read_fresh_env_vars();
 
         let mut cmd_builder = Command::new("cmd");
-        cmd_builder.args(["/C", &cmd]).env("PATH", &fresh_path);
+        // 先切换到 UTF-8 代码页（65001），解决中文 Windows 默认 GBK（936）
+        // 导致 mvn -v / mysql -V 等命令输出乱码的问题
+        let utf8_cmd = format!("chcp 65001 >nul 2>&1 & {}", &cmd);
+        cmd_builder.args(["/C", &utf8_cmd]).env("PATH", &fresh_path);
         hide_window(&mut cmd_builder);
         for (k, v) in &fresh_envs {
             cmd_builder.env(k, v);
