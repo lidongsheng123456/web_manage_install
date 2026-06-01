@@ -2,8 +2,12 @@ name: Release Windows EXE
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+    paths:
+      - "package.json"
   workflow_dispatch:
     inputs:
       tag:
@@ -54,6 +58,7 @@ jobs:
           $package = Get-Content -Raw package.json | ConvertFrom-Json
           $version = $package.version
           $appName = $package.name
+          $shouldRelease = "true"
 
           $tagInput = "${{ github.event.inputs.tag }}"
           if ([string]::IsNullOrWhiteSpace($tagInput)) {
@@ -73,16 +78,38 @@ jobs:
             $prerelease = "false"
           }
 
+          if ("${{ github.event_name }}" -eq "push" -and "${{ github.ref_type }}" -ne "tag") {
+            $before = "${{ github.event.before }}"
+            if (-not [string]::IsNullOrWhiteSpace($before) -and $before -notmatch '^0+$') {
+              $previousPackageJson = git show "${before}:package.json" 2>$null | Out-String
+              if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($previousPackageJson)) {
+                $previousVersion = ($previousPackageJson | ConvertFrom-Json).version
+                if ($previousVersion -eq $version) {
+                  $shouldRelease = "false"
+                }
+              }
+            }
+          }
+
           "app_name=$appName" >> $env:GITHUB_OUTPUT
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tagInput" >> $env:GITHUB_OUTPUT
           "asset_name=$appName.exe" >> $env:GITHUB_OUTPUT
           "prerelease=$prerelease" >> $env:GITHUB_OUTPUT
+          "should_release=$shouldRelease" >> $env:GITHUB_OUTPUT
+
+      - name: Skip unchanged package version
+        if: steps.meta.outputs.should_release != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "package.json changed, but the version is still ${{ steps.meta.outputs.version }}. Skip release."
 
       - name: Build Windows executable
+        if: steps.meta.outputs.should_release == 'true'
         run: npm run tauri:build -- --no-bundle --ci
 
       - name: Prepare release assets and notes
+        if: steps.meta.outputs.should_release == 'true'
         id: package
         shell: pwsh
         run: |
@@ -179,6 +206,7 @@ jobs:
           "body_path=$bodyRelativePath" >> $env:GITHUB_OUTPUT
 
       - name: Publish GitHub release
+        if: steps.meta.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2.6.2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
