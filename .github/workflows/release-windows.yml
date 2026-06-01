@@ -1,4 +1,4 @@
-name: Release Windows EXE
+name: 发布 Windows EXE
 
 on:
   push:
@@ -25,33 +25,33 @@ permissions:
 
 jobs:
   release-windows:
-    name: Build and publish Windows exe
+    name: 构建并发布 Windows EXE
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: 拉取代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      - name: Setup Rust
+      - name: 安装 Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust builds
+      - name: 缓存 Rust 构建
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
 
-      - name: Install frontend dependencies
+      - name: 安装前端依赖
         run: npm ci
 
-      - name: Resolve release metadata
+      - name: 解析发布信息
         id: meta
         shell: pwsh
         run: |
@@ -98,17 +98,17 @@ jobs:
           "prerelease=$prerelease" >> $env:GITHUB_OUTPUT
           "should_release=$shouldRelease" >> $env:GITHUB_OUTPUT
 
-      - name: Skip unchanged package version
+      - name: 跳过未变更版本
         if: steps.meta.outputs.should_release != 'true'
         shell: pwsh
         run: |
-          Write-Host "package.json changed, but the version is still ${{ steps.meta.outputs.version }}. Skip release."
+          Write-Host "package.json 已变更，但版本号仍是 ${{ steps.meta.outputs.version }}，跳过发布。"
 
-      - name: Build Windows executable
+      - name: 构建 Windows 可执行文件
         if: steps.meta.outputs.should_release == 'true'
         run: npm run tauri:build -- --no-bundle --ci
 
-      - name: Prepare release assets and notes
+      - name: 准备发布附件和说明
         if: steps.meta.outputs.should_release == 'true'
         id: package
         shell: pwsh
@@ -124,7 +124,7 @@ jobs:
 
           $exePath = Join-Path $PWD "src-tauri/target/release/$appName.exe"
           if (-not (Test-Path $exePath)) {
-            throw "Build output not found: $exePath"
+            throw "未找到构建产物: $exePath"
           }
 
           $assetRelativePath = "release-assets/$assetName"
@@ -205,7 +205,7 @@ jobs:
           "md5_path=$md5RelativePath" >> $env:GITHUB_OUTPUT
           "body_path=$bodyRelativePath" >> $env:GITHUB_OUTPUT
 
-      - name: Publish GitHub release
+      - name: 发布 GitHub Release
         if: steps.meta.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2.6.2
         with:
