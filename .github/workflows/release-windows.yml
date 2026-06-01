@@ -30,12 +30,12 @@ jobs:
 
     steps:
       - name: 拉取代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -207,8 +207,9 @@ jobs:
 
       - name: 发布 GitHub Release
         if: steps.meta.outputs.should_release == 'true'
-        uses: softprops/action-gh-release@v2.6.2
+        uses: softprops/action-gh-release@v3
         with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
           tag_name: ${{ steps.meta.outputs.tag }}
           target_commitish: ${{ github.sha }}
           name: "🚀 ${{ steps.meta.outputs.app_name }} ${{ steps.meta.outputs.tag }}"
@@ -220,5 +221,3 @@ jobs:
           prerelease: ${{ steps.meta.outputs.prerelease }}
           make_latest: true
           fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

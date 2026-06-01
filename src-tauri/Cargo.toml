@@ -1,6 +1,6 @@
 [package]
 name = "dev-env-installer"
-version = "1.7.2"
+version = "1.7.3"
 description = "开发环境可视化安装器"
 authors = ["you"]
 edition = "2021"
