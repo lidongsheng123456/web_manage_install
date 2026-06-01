@@ -1,0 +1,196 @@
+name: Release Windows EXE
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "发布标签，留空则使用 package.json 中的版本号，例如 v1.7.0"
+        required: false
+        default: ""
+      prerelease:
+        description: "标记为预发布版本"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release-windows:
+    name: Build and publish Windows exe
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Resolve release metadata
+        id: meta
+        shell: pwsh
+        run: |
+          $package = Get-Content -Raw package.json | ConvertFrom-Json
+          $version = $package.version
+          $appName = $package.name
+
+          $tagInput = "${{ github.event.inputs.tag }}"
+          if ([string]::IsNullOrWhiteSpace($tagInput)) {
+            if ("${{ github.ref_type }}" -eq "tag") {
+              $tagInput = "${{ github.ref_name }}"
+            } else {
+              $tagInput = "v$version"
+            }
+          }
+
+          if ($tagInput -notmatch '^v') {
+            $tagInput = "v$tagInput"
+          }
+
+          $prerelease = "${{ github.event.inputs.prerelease }}"
+          if ([string]::IsNullOrWhiteSpace($prerelease)) {
+            $prerelease = "false"
+          }
+
+          "app_name=$appName" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tagInput" >> $env:GITHUB_OUTPUT
+          "asset_name=$appName.exe" >> $env:GITHUB_OUTPUT
+          "prerelease=$prerelease" >> $env:GITHUB_OUTPUT
+
+      - name: Build Windows executable
+        run: npm run tauri:build -- --no-bundle --ci
+
+      - name: Prepare release assets and notes
+        id: package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $appName = "${{ steps.meta.outputs.app_name }}"
+          $version = "${{ steps.meta.outputs.version }}"
+          $tag = "${{ steps.meta.outputs.tag }}"
+          $assetName = "${{ steps.meta.outputs.asset_name }}"
+          $releaseDir = Join-Path $PWD "release-assets"
+          New-Item -ItemType Directory -Force $releaseDir | Out-Null
+
+          $exePath = Join-Path $PWD "src-tauri/target/release/$appName.exe"
+          if (-not (Test-Path $exePath)) {
+            throw "Build output not found: $exePath"
+          }
+
+          $assetRelativePath = "release-assets/$assetName"
+          $assetPath = Join-Path $PWD $assetRelativePath
+          Copy-Item $exePath $assetPath -Force
+
+          $md5 = (Get-FileHash $assetPath -Algorithm MD5).Hash.ToLowerInvariant()
+          $md5Path = "$assetPath.md5"
+          $md5RelativePath = "$assetRelativePath.md5"
+          [System.IO.File]::WriteAllText($md5Path, $md5, [System.Text.UTF8Encoding]::new($false))
+
+          $commitLines = git log -10 --pretty=format:"%s|%h"
+          $commits = @()
+          foreach ($line in $commitLines) {
+            if ([string]::IsNullOrWhiteSpace($line)) {
+              continue
+            }
+
+            $parts = $line -split "\|", 2
+            $subject = $parts[0]
+            $shortSha = $parts[1]
+
+            if ($subject -match '^[\p{So}\p{Sk}\p{Cs}]') {
+              $commits += ('- {0} (`{1}`)' -f $subject, $shortSha)
+              continue
+            }
+
+            $icon = "🔧"
+            if ($subject -match "^(fix|bugfix|hotfix)(\(.+\))?:") {
+              $icon = "🐛"
+            } elseif ($subject -match "^(feat|feature)(\(.+\))?:") {
+              $icon = "✨"
+            } elseif ($subject -match "^(docs)(\(.+\))?:") {
+              $icon = "📝"
+            } elseif ($subject -match "^(test)(\(.+\))?:") {
+              $icon = "✅"
+            } elseif ($subject -match "^(refactor|perf)(\(.+\))?:") {
+              $icon = "♻️"
+            }
+
+            $commits += ('- {0} {1} (`{2}`)' -f $icon, $subject, $shortSha)
+          }
+
+          if ($commits.Count -eq 0) {
+            $commits += "- 暂无提交记录"
+          }
+
+          $buildTime = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'")
+          $branch = "${{ github.event.repository.default_branch }}"
+          if ([string]::IsNullOrWhiteSpace($branch)) {
+            $branch = "${{ github.ref_name }}"
+          }
+
+          $bodyPath = Join-Path $releaseDir "release-notes.md"
+          $bodyRelativePath = "release-assets/release-notes.md"
+          $bodyLines = @(
+            "# $appName $tag",
+            "",
+            "## 最近提交",
+            ""
+          ) + $commits + @(
+            "",
+            "## 信息",
+            "",
+            "- 版本: $version",
+            "- 分支: $branch",
+            "- 构建时间: $buildTime",
+            "",
+            "## 下载附件",
+            "",
+            "- $assetName",
+            "- $assetName.md5"
+          )
+
+          [System.IO.File]::WriteAllText($bodyPath, ($bodyLines -join "`n"), [System.Text.UTF8Encoding]::new($false))
+
+          "asset_path=$assetRelativePath" >> $env:GITHUB_OUTPUT
+          "md5_path=$md5RelativePath" >> $env:GITHUB_OUTPUT
+          "body_path=$bodyRelativePath" >> $env:GITHUB_OUTPUT
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2.6.2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: "🚀 ${{ steps.meta.outputs.app_name }} ${{ steps.meta.outputs.tag }}"
+          body_path: ${{ steps.package.outputs.body_path }}
+          files: |
+            ${{ steps.package.outputs.asset_path }}
+            ${{ steps.package.outputs.md5_path }}
+          draft: false
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
