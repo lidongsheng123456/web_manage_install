@@ -1,18 +1,13 @@
 use crate::common::types::{CancelToken, DownloadProgress, InstallConfig, InstallResult};
-use crate::common::version_policy::defaults;
-use crate::install::components::{bundled, jdk, maven, mysql, node};
-use crate::install::workflow::cancel::check_cancel;
-use crate::install::workflow::dry_run::dry_run_download;
-use crate::install::workflow::events::emit_status;
 use crate::install::workflow::privilege::is_elevated;
-use crate::install::workflow::result::record_install_result;
+use crate::install::workflow::task;
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Emitter, Manager};
 
-/// 统一安装入口：根据用户配置依次安装选中的组件。
+/// 统一安装入口：根据用户配置并发安装选中的组件。
 ///
-/// 这里仅负责流程编排：取消检查、测试模式分支、结果汇总和事件收口；
-/// 具体安装细节下沉到各组件安装器，避免命令入口承载业务实现。
+/// 这里仅负责流程编排：初始化、权限检查、委托并发任务执行、结果汇总和事件收口；
+/// 具体安装细节下沉到各组件安装器，并发调度由 task 模块承担。
 #[tauri::command]
 pub async fn install_all(
     app: AppHandle,
@@ -27,7 +22,7 @@ pub async fn install_all(
     std::fs::create_dir_all(&temp).ok();
 
     if !config.dry_run && !is_elevated() {
-        emit_status(
+        crate::install::emit_status(
             &app,
             "nodejs",
             "config",
@@ -35,113 +30,23 @@ pub async fn install_all(
         );
     }
 
-    let mut results = Vec::new();
-    let dry = config.dry_run;
-    let ver = &config;
-    let mut cancelled = false;
+    let results = task::run_all_concurrent(&app, &config, &on_progress).await;
 
-    // 每个组件安装前都检查取消信号，已取消时不再启动后续安装任务。
-    macro_rules! install_component {
-        ($flag:expr, $name:expr, $install_expr:expr) => {
-            if $flag && !cancelled {
-                if check_cancel(&app).is_err() {
-                    cancelled = true;
-                    emit_status(&app, $name, "error", "安装已取消");
-                } else {
-                    record_install_result(&app, $name, $install_expr, &mut results);
-                }
-            }
-        };
-    }
-
-    install_component!(
-        config.install_nodejs,
-        "nodejs",
-        if dry {
-            dry_run_download(&app, "nodejs", &ver.node_version, &temp, &on_progress).await
-        } else {
-            node::install(&app, &root, &temp, &ver.node_version, &on_progress).await
-        }
-    );
-
-    install_component!(
-        config.install_jdk,
-        "jdk",
-        if dry {
-            dry_run_download(&app, "jdk", &ver.jdk_version, &temp, &on_progress).await
-        } else {
-            jdk::install(&app, &root, &temp, &ver.jdk_version, &on_progress).await
-        }
-    );
-
-    install_component!(
-        config.install_maven,
-        "maven",
-        if dry {
-            dry_run_download(&app, "maven", &ver.maven_version, &temp, &on_progress).await
-        } else {
-            maven::install(&app, &root, &temp, &ver.maven_version, &on_progress).await
-        }
-    );
-
-    install_component!(
-        config.install_mysql,
-        "mysql",
-        if dry {
-            dry_run_download(&app, "mysql", &ver.mysql_version, &temp, &on_progress).await
-        } else {
-            mysql::install(
-                &app,
-                &root,
-                &temp,
-                &ver.mysql_version,
-                &config.mysql_password,
-                &on_progress,
-            )
-            .await
-        }
-    );
-
-    install_component!(
-        config.install_idea,
-        "idea",
-        if dry {
-            dry_run_download(&app, "idea", defaults::IDEA, &temp, &on_progress).await
-        } else {
-            bundled::download_idea(&app, &root, &temp, &on_progress).await
-        }
-    );
-
-    install_component!(
-        config.install_navicat,
-        "navicat",
-        if dry {
-            dry_run_download(&app, "navicat", defaults::NAVICAT, &temp, &on_progress).await
-        } else {
-            bundled::download_navicat(&app, &root, &temp, &on_progress).await
-        }
-    );
-
-    install_component!(
-        config.install_redis,
-        "redis",
-        if dry {
-            dry_run_download(&app, "redis", defaults::REDIS, &temp, &on_progress).await
-        } else {
-            bundled::download_redis(&app, &root, &temp, &on_progress).await
-        }
-    );
-
-    if !dry {
+    if !config.dry_run {
         let _ = std::fs::remove_dir_all(&temp);
     }
 
-    if cancelled {
-        let cancelled_comps: Vec<String> = results.iter().map(|r| r.component.clone()).collect();
+    let has_cancelled = results.iter().any(|r| r.message.contains("已取消"));
+    if has_cancelled {
+        let completed: Vec<String> = results
+            .iter()
+            .filter(|r| r.success)
+            .map(|r| r.component.clone())
+            .collect();
         let _ = app.emit(
             "install-cancelled",
             serde_json::json!({
-                "completedComponents": cancelled_comps,
+                "completedComponents": completed,
                 "message": "安装已取消，可选择回滚已完成的组件"
             }),
         );
