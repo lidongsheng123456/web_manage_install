@@ -8,6 +8,7 @@ mod maven;
 mod mysql;
 mod nodejs;
 mod service;
+mod tomcat;
 
 use crate::common::types::VersionOption;
 use std::cmp::Ordering;

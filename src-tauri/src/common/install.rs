@@ -33,6 +33,9 @@ pub struct InstallConfig {
     pub install_maven: bool,
     /// 是否安装 MySQL。
     pub install_mysql: bool,
+    /// 是否安装 Tomcat。
+    #[serde(default)]
+    pub install_tomcat: bool,
     /// 模拟测试模式：仅验证下载链接可用性，不执行实际安装。
     #[serde(default)]
     pub dry_run: bool,
@@ -48,6 +51,9 @@ pub struct InstallConfig {
     /// 用户选择的 MySQL 版本（如 "8.0.36"、"8.0.37"）。
     #[serde(default = "default_mysql_ver")]
     pub mysql_version: String,
+    /// 用户选择的 Tomcat 版本（如 "9.0.102"、"10.1.39"）。
+    #[serde(default = "default_tomcat_ver")]
+    pub tomcat_version: String,
     /// 是否安装 IntelliJ IDEA。
     #[serde(default)]
     pub install_idea: bool,
@@ -70,6 +76,9 @@ fn default_maven_ver() -> String {
 }
 fn default_mysql_ver() -> String {
     defaults::MYSQL.into()
+}
+fn default_tomcat_ver() -> String {
+    defaults::TOMCAT.into()
 }
 
 /// 单个组件的安装结果。

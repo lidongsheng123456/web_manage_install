@@ -8,6 +8,7 @@ pub mod defaults {
     pub const JDK: &str = "17";
     pub const MAVEN: &str = "3.9.6";
     pub const MYSQL: &str = "8.0.36";
+    pub const TOMCAT: &str = "8.5.100";
     pub const IDEA: &str = "2023.3.8";
     pub const NAVICAT: &str = "17";
     pub const REDIS: &str = "5.0.14.1";
@@ -18,6 +19,7 @@ pub mod defaults {
             "jdk" => JDK,
             "maven" => MAVEN,
             "mysql" => MYSQL,
+            "tomcat" => TOMCAT,
             "idea" => IDEA,
             "navicat" => NAVICAT,
             "redis" => REDIS,
@@ -145,6 +147,46 @@ pub mod jdk {
             "25" => "25.0.2",
             "26" => "26.0.1",
             _ => "17.0.2",
+        }
+    }
+}
+
+pub mod tomcat {
+    use super::defaults;
+
+    pub const MAX_OPTIONS: usize = 20;
+    pub const SUPPORTED_MAJORS: &[u32] = &[11, 10, 9, 8, 7];
+    pub const REQUIRED_VALUES: &[&str] = &[defaults::TOMCAT, "9.0.102", "10.1.39", "11.0.6", "7.0.109"];
+    pub const INSTALL_DIR_PREFIX: &str = "tomcat";
+
+    /// Tomcat 7 和早期 8 没有 windows-x64 专用包，使用平台无关的 zip。
+    pub fn has_windows_x64_zip(major: u32) -> bool {
+        major >= 9
+    }
+
+    pub fn major_from_version(version: &str) -> u32 {
+        version
+            .split('.')
+            .next()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(9)
+    }
+
+    pub fn major_dir(major: u32) -> String {
+        format!("tomcat-{major}")
+    }
+
+    pub fn install_dir_name(version: &str) -> String {
+        let major = major_from_version(version);
+        format!("{INSTALL_DIR_PREFIX}{major}")
+    }
+
+    pub fn label(version: &str) -> String {
+        let major = major_from_version(version);
+        match major {
+            7 => format!("Tomcat {version} (EOL)"),
+            8 | 9 | 10 => format!("Tomcat {version} (LTS)"),
+            _ => format!("Tomcat {version}"),
         }
     }
 }

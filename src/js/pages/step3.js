@@ -146,6 +146,7 @@ function buildInstallConfig(state, components) {
     installJdk: state.dryRun ? true : state.coreInstallFlags.jdk,
     installMaven: state.dryRun ? true : state.coreInstallFlags.maven,
     installMysql: state.dryRun ? true : state.coreInstallFlags.mysql,
+    installTomcat: state.dryRun ? true : state.coreInstallFlags.tomcat,
     installIdea: state.dryRun ? true : state.bundledTools.idea,
     installNavicat: state.dryRun ? true : state.bundledTools.navicat,
     installRedis: state.dryRun ? true : state.bundledTools.redis,
@@ -154,6 +155,7 @@ function buildInstallConfig(state, components) {
     jdkVersion: state.versions.jdk,
     mavenVersion: state.versions.maven,
     mysqlVersion: state.versions.mysql,
+    tomcatVersion: state.versions.tomcat,
   };
 }
 
@@ -162,11 +164,13 @@ function updateCardNames(state) {
   const nameJdk = $('name-jdk');
   const nameMaven = $('name-maven');
   const nameMysql = $('name-mysql');
+  const nameTomcat = $('name-tomcat');
 
   if (nameNode) nameNode.textContent = `Node.js v${state.versions.nodejs}`;
   if (nameJdk) nameJdk.textContent = `JDK ${state.versions.jdk}`;
   if (nameMaven) nameMaven.textContent = `Maven ${state.versions.maven}`;
   if (nameMysql) nameMysql.textContent = `MySQL ${state.versions.mysql}`;
+  if (nameTomcat) nameTomcat.textContent = `Tomcat ${state.versions.tomcat}`;
 }
 
 function handleProgress(data) {

@@ -8,7 +8,7 @@ use crate::download::service;
 #[tauri::command]
 pub async fn preflight_check() -> Result<Vec<PreflightResult>, String> {
     let components = [
-        "nodejs", "jdk", "maven", "mysql", "idea", "navicat", "redis",
+        "nodejs", "jdk", "maven", "mysql", "tomcat", "idea", "navicat", "redis",
     ];
     let client = reqwest::Client::builder()
         .connect_timeout(std::time::Duration::from_secs(15))

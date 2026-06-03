@@ -24,6 +24,7 @@ pub fn rollback(
             "idea" => rollback_dir(install_root, "IDEA", "IDEA", &mut rolled_back),
             "navicat" => rollback_dir(install_root, "Navicat", "Navicat", &mut rolled_back),
             "redis" => rollback_dir(install_root, "redis", "Redis", &mut rolled_back),
+            "tomcat" => rollback_tomcat(install_root, &mut rolled_back),
             _ => {}
         }
 
@@ -76,6 +77,15 @@ fn rollback_mysql(install_root: &str, rolled_back: &mut Vec<String>) {
     env_config::remove_env("MYSQL_HOME");
     remove_dir_safe(&dir);
     rolled_back.push("MySQL".into());
+}
+
+fn rollback_tomcat(install_root: &str, rolled_back: &mut Vec<String>) {
+    for major in [7, 8, 9, 10, 11] {
+        let dir = format!("{install_root}\\tomcat{major}");
+        remove_dir_safe(&dir);
+    }
+    env_config::remove_env("CATALINA_HOME");
+    rolled_back.push("Tomcat".into());
 }
 
 fn rollback_dir(install_root: &str, dir_name: &str, label: &str, rolled_back: &mut Vec<String>) {

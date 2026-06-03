@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="40" fill="#D4A017"/>
+  <g transform="translate(128,140)">
+    <!-- body -->
+    <ellipse cx="0" cy="10" rx="60" ry="50" fill="#C1440E"/>
+    <!-- head -->
+    <circle cx="0" cy="-40" r="40" fill="#C1440E"/>
+    <!-- ears -->
+    <polygon points="-35,-65 -20,-90 -5,-60" fill="#C1440E"/>
+    <polygon points="35,-65 20,-90 5,-60" fill="#C1440E"/>
+    <polygon points="-30,-68 -18,-85 -8,-63" fill="#E8A87C"/>
+    <polygon points="30,-68 18,-85 8,-63" fill="#E8A87C"/>
+    <!-- eyes -->
+    <ellipse cx="-14" cy="-45" rx="8" ry="9" fill="#FFF"/>
+    <ellipse cx="14" cy="-45" rx="8" ry="9" fill="#FFF"/>
+    <circle cx="-14" cy="-44" r="4" fill="#333"/>
+    <circle cx="14" cy="-44" r="4" fill="#333"/>
+    <!-- nose -->
+    <ellipse cx="0" cy="-32" rx="5" ry="3.5" fill="#E8A87C"/>
+    <!-- whiskers -->
+    <line x1="-40" y1="-35" x2="-12" y2="-33" stroke="#FFF" stroke-width="1.5"/>
+    <line x1="-38" y1="-28" x2="-12" y2="-30" stroke="#FFF" stroke-width="1.5"/>
+    <line x1="40" y1="-35" x2="12" y2="-33" stroke="#FFF" stroke-width="1.5"/>
+    <line x1="38" y1="-28" x2="12" y2="-30" stroke="#FFF" stroke-width="1.5"/>
+    <!-- mouth -->
+    <path d="M-6,-27 Q0,-22 6,-27" stroke="#FFF" stroke-width="1.5" fill="none"/>
+    <!-- belly -->
+    <ellipse cx="0" cy="15" rx="35" ry="30" fill="#E8A87C"/>
+    <!-- paws -->
+    <ellipse cx="-30" cy="55" rx="15" ry="8" fill="#C1440E"/>
+    <ellipse cx="30" cy="55" rx="15" ry="8" fill="#C1440E"/>
+  </g>
+  <!-- text -->
+  <text x="128" y="240" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="28" fill="#FFF">TOMCAT</text>
+</svg>

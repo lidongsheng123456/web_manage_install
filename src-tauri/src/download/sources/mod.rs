@@ -13,6 +13,7 @@ mod mysql;
 mod navicat;
 mod nodejs;
 mod redis;
+mod tomcat;
 
 pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
     match component {
@@ -23,6 +24,7 @@ pub fn get_mirrors_versioned(component: &str, version: &str) -> MirrorSource {
         "idea" => idea::mirrors(version),
         "navicat" => navicat::mirrors(),
         "redis" => redis::mirrors(version),
+        "tomcat" => tomcat::mirrors(version),
         _ => MirrorSource {
             urls: vec![],
             filename: String::new(),
@@ -120,5 +122,27 @@ mod tests {
         let source = get_mirrors_versioned("redis", "5.0.14.1");
         assert!(source.urls[0].contains("gh-proxy.com"));
         assert!(source.urls.last().unwrap().contains("github.com"));
+    }
+
+    #[test]
+    fn tomcat9_download_sources_prefer_china_mirrors_with_windows_x64() {
+        let source = get_mirrors_versioned("tomcat", "9.0.102");
+        assert!(source.urls[0].contains("repo.huaweicloud.com"));
+        assert!(source.urls[1].contains("mirrors.ustc.edu.cn"));
+        assert!(source.urls.last().unwrap().contains("archive.apache.org"));
+        assert_eq!(source.filename, "apache-tomcat-9.0.102-windows-x64.zip");
+    }
+
+    #[test]
+    fn tomcat7_download_sources_use_platform_independent_zip() {
+        let source = get_mirrors_versioned("tomcat", "7.0.109");
+        assert_eq!(source.filename, "apache-tomcat-7.0.109.zip");
+        assert!(!source.urls[0].contains("windows-x64"));
+    }
+
+    #[test]
+    fn tomcat85_download_sources_use_platform_independent_zip() {
+        let source = get_mirrors_versioned("tomcat", "8.5.100");
+        assert_eq!(source.filename, "apache-tomcat-8.5.100.zip");
     }
 }

@@ -17,5 +17,6 @@ export async function detectEnvironment(versions) {
     jdkVersion: versions.jdk || '17',
     mavenVersion: versions.maven || '3.9.6',
     mysqlVersion: versions.mysql || '8.0.36',
+    tomcatVersion: versions.tomcat || '8.5.100',
   });
 }

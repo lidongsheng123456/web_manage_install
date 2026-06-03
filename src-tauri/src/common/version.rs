@@ -21,7 +21,7 @@ pub struct VersionOption {
     pub source: String,
 }
 
-/// 四个核心环境的动态版本目录。
+/// 核心环境的动态版本目录。
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VersionCatalog {
@@ -29,4 +29,5 @@ pub struct VersionCatalog {
     pub jdk: Vec<VersionOption>,
     pub maven: Vec<VersionOption>,
     pub mysql: Vec<VersionOption>,
+    pub tomcat: Vec<VersionOption>,
 }

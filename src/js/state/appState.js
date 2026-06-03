@@ -12,10 +12,10 @@ const state = {
   mysqlPassword: '123456',
   dryRun: false,
 
-  versions: { nodejs: '', jdk: '', maven: '', mysql: '' },
+  versions: { nodejs: '', jdk: '', maven: '', mysql: '', tomcat: '' },
 
   /** 核心环境安装开关（由 Step2 检测结果 + 用户手动切换决定） */
-  coreInstallFlags: { nodejs: true, jdk: true, maven: true, mysql: true },
+  coreInstallFlags: { nodejs: true, jdk: true, maven: true, mysql: true, tomcat: true },
 
   /** 附加工具安装开关（由 Step2 用户勾选决定） */
   bundledTools: { idea: false, navicat: false, redis: false },
@@ -107,7 +107,7 @@ export function getComponentsToInstall() {
  * 重置所有安装相关状态（返回首页时调用）
  */
 export function resetInstallState() {
-  state.coreInstallFlags = { nodejs: true, jdk: true, maven: true, mysql: true };
+  state.coreInstallFlags = { nodejs: true, jdk: true, maven: true, mysql: true, tomcat: true };
   state.bundledTools = { idea: false, navicat: false, redis: false };
   state.detectResults = [];
   state.installResults = [];

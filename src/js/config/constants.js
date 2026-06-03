@@ -9,6 +9,7 @@ import nodeLogo from '../../assets/logos/nodejs.svg';
 import jdkLogo from '../../assets/logos/jdk.png';
 import mavenLogo from '../../assets/logos/maven.png';
 import mysqlLogo from '../../assets/logos/mysql.svg';
+import tomcatLogo from '../../assets/logos/tomcat.svg';
 import ideaLogo from '../../assets/logos/idea.svg';
 import navicatLogo from '../../assets/logos/navicat.ico';
 import redisLogo from '../../assets/logos/redis.svg';
@@ -21,6 +22,7 @@ export const CORE_COMPONENTS = [
   { id: 'jdk', name: 'JDK', iconClass: 'jdk', iconSrc: jdkLogo, verifyCmd: 'java -version' },
   { id: 'maven', name: 'Maven', iconClass: 'maven', iconSrc: mavenLogo, verifyCmd: 'mvn -v' },
   { id: 'mysql', name: 'MySQL', iconClass: 'mysql', iconSrc: mysqlLogo, verifyCmd: 'mysql -V' },
+  { id: 'tomcat', name: 'Tomcat', iconClass: 'tomcat', iconSrc: tomcatLogo, verifyCmd: null },
 ];
 
 /**
@@ -61,13 +63,14 @@ export const VERSION_SELECT_IDS = {
   jdk: 'ver-jdk',
   maven: 'ver-maven',
   mysql: 'ver-mysql',
+  tomcat: 'ver-tomcat',
 };
 
 /**
  * 组件 ID → 显示名称生成（带版本号）
  */
 export function getComponentDisplayName(id, versions) {
-  const prefix = { nodejs: 'Node.js', jdk: 'JDK', maven: 'Maven', mysql: 'MySQL' };
+  const prefix = { nodejs: 'Node.js', jdk: 'JDK', maven: 'Maven', mysql: 'MySQL', tomcat: 'Tomcat' };
   if (prefix[id] && versions[id]) {
     return `${prefix[id]} ${id === 'nodejs' ? 'v' : ''}${versions[id]}`;
   }

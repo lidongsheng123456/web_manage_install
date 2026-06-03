@@ -9,6 +9,7 @@
     "core:event:default",
     "core:event:allow-emit",
     "core:event:allow-listen",
+    "core:window:allow-close",
     "dialog:default",
     "dialog:allow-open"
   ]

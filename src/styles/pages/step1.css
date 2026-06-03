@@ -223,7 +223,8 @@
 
 .comp-icon.maven img,
 .comp-icon.jdk img,
-.comp-icon.mysql img {
+.comp-icon.mysql img,
+.comp-icon.tomcat img {
   width: 82%;
   height: 82%;
 }

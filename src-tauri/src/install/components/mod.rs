@@ -8,4 +8,5 @@ pub mod maven;
 pub mod mysql;
 pub mod navicat;
 pub mod node;
+pub mod tomcat;
 pub(crate) mod utils;

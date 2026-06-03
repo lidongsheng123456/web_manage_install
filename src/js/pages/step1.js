@@ -97,6 +97,7 @@ function loadVersions() {
       populateSelect('ver-jdk', catalog.jdk);
       populateSelect('ver-maven', catalog.maven);
       populateSelect('ver-mysql', catalog.mysql);
+      populateSelect('ver-tomcat', catalog.tomcat);
 
       selectIds.forEach(id => {
         const select = $(id);
