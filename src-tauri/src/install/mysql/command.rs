@@ -6,14 +6,12 @@ use std::process::Command;
 /// 中文 Windows 默认代码页为 936 (GBK)，切换到 UTF-8 可减少 mysqld
 /// 初始化输出乱码对判断逻辑的影响。
 pub fn cmd_with_utf8(program: &str, args: &[&str]) -> Command {
-    let args_str = std::iter::once(program.to_string())
-        .chain(args.iter().map(|a| {
-            if a.contains(' ') {
-                format!("\"{}\"", a)
-            } else {
-                a.to_string()
-            }
-        }))
+    let quote = |s: &str| -> String {
+        if s.contains(' ') { format!("\"{}\"", s) } else { s.to_string() }
+    };
+
+    let args_str = std::iter::once(quote(program))
+        .chain(args.iter().map(|a| quote(a)))
         .collect::<Vec<_>>()
         .join(" ");
 

@@ -69,7 +69,7 @@ pub fn register_service(
     emit_status(app, "mysql", "config", "正在注册 MySQL 系统服务...");
 
     let mysqld = format!("{mysql_home}\\bin\\mysqld.exe");
-    let output = hide_window(Command::new(&mysqld).args(["--install", service_name]))
+    let output = cmd_with_utf8(&mysqld, &["--install", service_name])
         .output()
         .map_err(|e| format!("注册服务失败: {e}"))?;
 

@@ -8,8 +8,8 @@ pub fn write_my_ini(mysql_home: &str, port: u16) -> Result<(), String> {
     let lines = [
         "[mysqld]",
         &format!("port={port}"),
-        &format!("basedir={base}"),
-        &format!("datadir={data}"),
+        &format!("basedir=\"{base}\""),
+        &format!("datadir=\"{data}\""),
         "max_connections=200",
         "character-set-server=utf8mb4",
         "default-storage-engine=INNODB",
