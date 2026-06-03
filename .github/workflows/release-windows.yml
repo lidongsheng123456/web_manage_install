@@ -209,7 +209,7 @@ jobs:
         if: steps.meta.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v3
         with:
-          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+          token: ${{ github.token }}
           tag_name: ${{ steps.meta.outputs.tag }}
           target_commitish: ${{ github.sha }}
           name: "🚀 ${{ steps.meta.outputs.app_name }} ${{ steps.meta.outputs.tag }}"
